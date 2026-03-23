@@ -92,13 +92,13 @@
 const nodes = [
   // 核心层
   { id: "p1", label: "Paper 1\n互补配对", type: "core",
-    detail: "<h4>Paper 1: Complementary Pairing</h4><p>Helix = DNA硬归纳偏置，特征交互AUC 0.716 vs 0.632，54%更少参数。已在KDD Cup TAAC验证。</p><span class='tag'>✅ 完成</span><span class='tag'>待投 ACL</span>",
+    detail: "<h4>Paper 1: Complementary Pairing</h4><p>Helix = DNA硬归纳偏置，特征交互AUC 0.716 vs 0.632，54%更少参数。已在KDD Cup TAAC验证。<br><a href='https://github.com/simulai/ASI/tree/main/04_papers/paper1_complementary_pairing' target='_blank' style='color:#4fc3f7'>📄 详情</a></p><span class='tag'>✅ 完成</span><span class='tag'>待投 ACL</span>",
     x: 420, y: 310 },
   { id: "p2", label: "Paper 2\n热力学基础", type: "core",
-    detail: "<h4>Paper 2: Thermodynamic Foundations</h4><p>F = Helmholtz自由能，Landauer耗散，NCA外部验证。吸引子=不动点，Attention=连续近似。</p><span class='tag'>🔄 进行中</span>",
+    detail: "<h4>Paper 2: Thermodynamic Foundations</h4><p>F = Helmholtz自由能，Landauer耗散，NCA外部验证。吸引子=不动点，Attention=连续近似。<br><a href='https://github.com/simulai/ASI/tree/main/02_theory/en' target='_blank' style='color:#4fc3f7'>📄 详情</a></p><span class='tag'>🔄 进行中</span>",
     x: 560, y: 310 },
   { id: "p3", label: "Paper 3\n组件库", type: "core",
-    detail: "<h4>Paper 3: Component Library</h4><p>Landauer门 + Hopfield + 互补门 + 路由。模块化热力学实现。</p><span class='tag'>💡 概念</span>",
+    detail: "<h4>Paper 3: Component Library</h4><p>Landauer门 + Hopfield + 互补门 + 路由。模块化热力学实现。<br><a href='https://github.com/simulai/ASI/blob/main/02_theory/en/landauer_en.md' target='_blank' style='color:#4fc3f7'>📄 详情</a></p><span class='tag'>💡 概念</span>",
     x: 700, y: 310 },
 
   // 理论支撑层
@@ -112,10 +112,10 @@ const nodes = [
     detail: "<h4>Hopfield Networks (1982)</h4><p>能量函数 E = -½Σwᵢⱼsᵢsⱼ。吸引子 = 能量局部最小点。我们用Attention近似。</p><span class='tag'>经典基础</span>",
     x: 280, y: 340 },
   { id: "nca", label: "NCA\n计算结构迁移", type: "support",
-    detail: "<h4>MIT CSAIL 2026 (arXiv:2603.10055)</h4><p>神经细胞自动机数据训练LMs: 164M token > 1.6B英语token。注意力层迁移效果最好。外部独立验证！</p><span class='tag'>外部验证</span>",
+    detail: "<h4>MIT CSAIL 2026 (arXiv:2603.10055)</h4><p>神经细胞自动机数据训练LMs: 164M token > 1.6B英语token。注意力层迁移效果最好。外部独立验证！<br><a href='https://arxiv.org/abs/2603.10055' target='_blank' style='color:#81c784'>📄 arXiv</a></p><span class='tag'>外部验证</span>",
     x: 420, y: 180 },
   { id: "fecg", label: "FECG_LEAN\n形式化证明", type: "lean",
-    detail: "<h4>Lean4 形式化证明 (FECG_LEAN)</h4><p>energy_convergent / fixed_point_of_limit / composite_energy_converges / async收敛性 — 数学上锁死热力学框架！</p><span class='tag'>形式化证明</span><span class='tag'>Mathlib</span>",
+    detail: "<h4>Lean4 形式化证明 (FECG_LEAN)</h4><p>energy_convergent / fixed_point_of_limit / async收敛性 — 数学上锁死热力学框架！<br><a href='https://github.com/simulai/FECG_LEAN' target='_blank' style='color:#ce93d8'>🔗 GitHub/FECG_LEAN</a></p><span class='tag'>形式化证明</span><span class='tag'>Mathlib</span>",
     x: 560, y: 180 },
 
   // 实验验证
@@ -126,7 +126,7 @@ const nodes = [
     detail: "<h4>H2: Attractor Convergence</h4><p>初始F越低→收敛步数越少。在TinyGridEnv上验证。</p><span class='tag'>Toy验证</span>",
     x: 490, y: 450 },
   { id: "h3", label: "H3\nMetaGate曲率", type: "toy",
-    detail: "<h4>H3: MetaGate Curvature Trigger</h4><p>曲率越大→MetaGate自省触发。TinyGridEnv验证。</p><span class='tag'>Toy验证</span>",
+    detail: "<h4>H3: MetaGate Curvature Trigger</h4><p>曲率越大→MetaGate自省触发。TinyGridEnv验证。<br><a href='https://github.com/simulai/ASI/blob/main/02_theory/en/h1_h5_en.md' target='_blank' style='color:#4fc3f7'>📄 详情</a></p><span class='tag'>Toy验证</span><span class='tag'>H3</span>",
     x: 560, y: 420 },
 
   // 竞争层

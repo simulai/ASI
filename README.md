@@ -71,7 +71,9 @@ These are **theorems**, not hypotheses. If premises hold, conclusions *must* fol
 |---|-------|--------|------|
 | 1 | Complementary Pairing | ✅ Done | Helix = DNA hard bias, CTR AUC 0.716 |
 | 2 | Thermodynamic Foundations | 🔄 In progress | F = Helmholtz, Landauer, NCA, **Lean4 proofs** |
-| 3 | Component Library | 💡 Concept | Landauer gate + Hopfield + MetaGate + routing |
+| 3 | Component Library | 💡 Concept | [Landauer Gate][Landauer] + [Hopfield][Hopfield] + [MetaGate][MetaGate] + routing |
+
+[Hopfield]: 02_theory/references.md
 
 ---
 
@@ -91,10 +93,15 @@ What was learned: **computational structure** — not language, not semantics.
 
 | Component | Physical Meaning | Evidence |
 |-----------|----------------|---------|
-| **Attention** | Continuous approximation of Helmholtz free-energy minimization | Statistical mechanics |
-| **Helix** | DNA complementary pairing = forced low-energy attractor entry | CTR AUC 0.716, 54% fewer params |
-| **MetaGate** | Curvature-triggered metacognitive interruption: when `d²F/dt²` is large, pause and introspect | Toy experiments (H3) |
-| **Landauer Gate** | Physical dissipation = computational cost signal; replaces gradient as the "effort" signal | Conceptual (Paper 3) |
+| [Attention][Attention] | Continuous approximation of Helmholtz free-energy minimization | Statistical mechanics |
+| [Helix][Helix] | DNA complementary pairing = forced low-energy attractor entry | CTR AUC 0.716, 54% fewer params |
+| [MetaGate][MetaGate] | Curvature-triggered metacognitive interruption: when `d²F/dt²` is large, pause and introspect | Toy experiments (H3) |
+| [Landauer Gate][Landauer] | Physical dissipation = computational cost signal; replaces gradient as the "effort" signal | Conceptual (Paper 3) |
+
+[Attention]: 02_theory/en/h1_h5_en.md
+[Helix]: 04_papers/paper1_complementary_pairing/
+[MetaGate]: 02_theory/en/h1_h5_en.md
+[Landauer]: 02_theory/en/landauer_en.md
 
 ### Why These Four?
 
