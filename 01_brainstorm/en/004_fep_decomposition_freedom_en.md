@@ -108,3 +108,58 @@ Each component is an independent agent, communicating via an Active Inference pr
 | **Optimal strategy** | **Prove effectiveness on benchmarks first, then backfill the physics** | — |
 
 > **Our current bottleneck**: The physics derivation of all four components is done (Paper 2), but we haven't yet proven their effectiveness on benchmarks. This is the next mandatory step.
+
+---
+
+## The Fourier Analogy: FEP Modular Decomposition Is Isomorphic to Basis Function Expansion
+
+This "freedom" immediately evokes **Fourier transforms** — the same signal can be expanded using infinitely many basis functions.
+
+### Structural Analogy
+
+| | Fourier Transform | FEP Modular Decomposition |
+|--|-------------------|--------------------------|
+| Same target | Any function can be expanded with sine/ square / impulse / wavelet bases | FEP closed loop can be implemented with infinitely many module combinations |
+| Basis selection criteria | Depends on what you want to analyze (frequency? time-frequency localization? singularities?) | Module selection depends on what problem you're solving |
+| Absolute optimal basis | None — only "more convenient for this task" | No unique answer — only "more implementable for this architecture/hardware" |
+| Shared constraint | All bases must span the target function space | All modules must express the complete FEP closed loop |
+
+### Each "Basis" Excels at Different Things
+
+Fourier basis → good at periodicity, steady-state analysis
+Wavelet basis → good at transients, time-frequency localization
+Multi-scale wavelets → good at fractals, self-similarity
+
+Mapping to FEP modules:
+
+| Module Type | Problems It Excels At | Analogy |
+|------------|----------------------|---------|
+| **Landauer basis** (cost-signal driven) | Resource awareness, anomaly detection, infinite loop interruption | Thermal imaging: sees where the system is "running hot" |
+| **Hopfield basis** (attractor-driven) | Associative memory, pattern completion, error correction | Spring: automatically slides to lowest potential |
+| **Predictive Coding basis** (layered error-driven) | Perception, vision, denoising | Differential amplifier: only amplifies error, not signal |
+| **Active Inference basis** (surprise minimization) | Planning, decision-making, active exploration | GPS: actively selects the path with minimum expected time |
+
+### Key Implication: Multi-Scale FEP Bases
+
+The core insight of wavelets: **different scales need different types of bases to analyze them well**.
+
+This completely aligns with the "timescale decomposition" direction above:
+
+| Timescale | Physical Process | Corresponding FEP "Basis" |
+|-----------|-----------------|--------------------------|
+| Milliseconds | Perceptual update, immediate response | Fast predictive coding layer |
+| Seconds–minutes | Planning, action selection | Mid-speed Active Inference |
+| Hours–days | Memory consolidation, structural learning | Slow Hopfield attractor |
+
+This is not a coincidence — wavelet theory and FEP modular decomposition are **isomorphic at the level of cross-scale decomposition**, which suggests we're on the right track.
+
+### Wavelet → Wavelet Packet: Can the "Basis" Itself Be Dynamically Selected?
+
+Wavelet packets go one step further: **not only do you select the scale, you dynamically select the optimal wavelet basis at each node**.
+
+Analogous to FEP:
+- Don't pre-assign which module handles which input
+- Instead, let the system learn "this problem should be analyzed with which FEP basis"
+- → corresponds to **a higher-order version of emergent routing**
+
+> This could be an extension direction for Paper 3: upgrade from "four components with fixed division of labor" to "dynamically select the optimal FEP basis."
