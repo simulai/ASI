@@ -1,6 +1,7 @@
 # Thermodynamic AGI / 热力学解析智能
 
 > **核心假设**: ASI 将诞生于**自由能最小化原理**与**Landauer计算耗散**的交汇处。
+
 > **Core Hypothesis**: ASI will emerge from **free-energy minimization** + **Landauer computational dissipation**.
 
 ---
