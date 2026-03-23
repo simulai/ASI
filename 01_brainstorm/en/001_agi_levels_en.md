@@ -233,20 +233,35 @@ In thermodynamic terms:
 
 ## Modularity: Why AGI Can't Be One Giant Model
 
-**Analogy**: The human body isn't one organ — it's a system of specialized organs working together.
+**Analogy**: The human body isn't one organ — it's a system of specialized organs. The brain handles thinking, the heart pumps blood, the lungs breathe. Each organ does one thing, and they all work together.
 
-Why modularity matters:
-1. **Knowledge isolation**: different modules handle different things without interference
-2. **Interpretability**: when something breaks, you know exactly where
-3. **Specialization**: each module can be trained on different data
-4. **Parallel development**: multiple teams can work on different modules simultaneously
+Why does the current L1 model have a problem? Because it pushed "pattern matching" to the extreme, but didn't separate "memory," "planning," and "cost awareness" into distinct parts — everything is crammed into one giant parameter matrix.
 
-**This is exactly the core thesis of Paper 3**:
+Modularity solves three concrete problems:
 
-- **Landauer gate**: physical dissipation as a cost signal
-- **Hopfield attractor**: stable knowledge storage unit
-- **Complementary gate**: selective information flow
-- **Routing mechanism**: dynamic decision about who handles what
+| Problem | End Result with One Giant Model | End Result with Modularity |
+|---------|--------------------------------|--------------------------|
+| One capability gets worse | Don't know why — retrain everything | Replace just that module |
+| Need to upgrade one capability | Changes affect everything | Only touch that module |
+| Want to add a new capability | Start from scratch | Plug in a new module, keep others |
+
+**This is exactly the core thesis of Paper 3: split AGI into four purpose-built components.**
+
+| Component | Replaces | Core Function | Human Analogy |
+|-----------|---------|--------------|--------------|
+| **Landauer Gate** | Softmax (attention output) | Knows "how much effort was spent" after every step | Human sense of fatigue |
+| **Hopfield Attractor** | KV-Cache (memory storage) | Fixes knowledge stably in a low-energy state | Human long-term memory |
+| **Complementary Gate (Helix)** | LSTM gate mechanism | Hard-selects information channels, no soft probabilities | DNA double-helix pairing |
+| **Emergent Routing** | MoE expert routing | Dynamically decides which module handles this input | Human intuitive judgment |
+
+**Why do these four components work together?** Because they all follow the same physical law: **free-energy minimization**.
+
+- Landauer Gate tells the system "how much energy this path cost"
+- Hopfield Attractor anchors knowledge in its lowest-energy state
+- Complementary Gate decides which attractor information flows into
+- Emergent Routing decides which component is currently in charge
+
+This is like a person's decision loop while working: feeling tired (Landauer) → recalling relevant experience (Hopfield) → deciding what to focus on (Complementary Gate) → judging who should handle it (Routing).
 
 ---
 
