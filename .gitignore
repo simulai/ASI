@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+
+# 实验输出
+*.json
+!04_PAPER区/paper1_互补配对/results.json
+
+# 系统
+.DS_Store
+Thumbs.db
