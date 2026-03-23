@@ -10,7 +10,8 @@
 
 ## 🗺️ Interactive Research Map
 
-**[Open research_map.html](docs/research_map.html)** — drag nodes, hover for details, scroll to zoom.
+**https://simulai.github.io/ASI/research_map.html** — drag nodes, hover for details, scroll to zoom.
+*(Or open locally: [docs/research_map.html](docs/research_map.html))*
 
 ---
 
@@ -41,7 +42,7 @@ ASI/
 | README | this file | [docs/zh/README_zh.md](docs/zh/README_zh.md) |
 | Core Narrative | [docs/en/narrative_en.md](docs/en/narrative_en.md) | [docs/zh/narrative_zh.md](docs/zh/narrative_zh.md) |
 | Research Map (static) | [docs/en/map_en.md](docs/en/map_en.md) | [docs/zh/map_zh.md](docs/zh/map_zh.md) |
-| Interactive Map | **[docs/research_map.html](docs/research_map.html)** | — |
+| Interactive Map | **[simulai.github.io/ASI/research_map.html](https://simulai.github.io/ASI/research_map.html)** | — |
 | H1–H5 Hypotheses | [02_theory/en/h1_h5_en.md](02_theory/en/h1_h5_en.md) | [02_theory/zh/h1_h5_zh.md](02_theory/zh/h1_h5_zh.md) |
 | Landauer Principle | [02_theory/en/landauer_en.md](02_theory/en/landauer_en.md) | [02_theory/zh/landauer_zh.md](02_theory/zh/landauer_zh.md) |
 | **Lean4 Proofs** | **[github.com/simulai/FECG_LEAN](https://github.com/simulai/FECG_LEAN)** | [02_theory/lean4_src/](02_theory/lean4_src/) |

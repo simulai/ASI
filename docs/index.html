@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASI — Thermodynamic AGI</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a1a;
+    color: #e0e6f0;
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+  }
+  h1 { font-size: 2.5em; color: #a8c8ff; letter-spacing: 2px; }
+  .subtitle { color: #7a8aaa; font-size: 1.1em; }
+  .btn {
+    background: #1a2a6a;
+    border: 1px solid #4fc3f7;
+    color: #4fc3f7;
+    padding: 14px 36px;
+    font-size: 1.1em;
+    border-radius: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: #2a4a9a; box-shadow: 0 0 20px #4fc3f740; }
+  .cards {
+    display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+    max-width: 900px; padding: 0 20px;
+  }
+  .card {
+    background: rgba(20,20,50,0.8);
+    border: 1px solid #2a2a5a;
+    border-radius: 10px;
+    padding: 20px;
+    width: 260px;
+    backdrop-filter: blur(8px);
+  }
+  .card h3 { color: #a8c8ff; margin-bottom: 8px; }
+  .card p { color: #7a8aaa; font-size: 0.9em; line-height: 1.5; }
+  .card .tag {
+    display: inline-block; background: #1a1a4a; color: #7aaeff;
+    border-radius: 4px; padding: 2px 8px; font-size: 11px; margin-top: 8px;
+  }
+  .footer { color: #3a4a6a; font-size: 0.8em; margin-top: 20px; }
+  a { color: #4fc3f7; }
+</style>
+</head>
+<body>
+
+<h1>ASI</h1>
+<p class="subtitle">热力学解析智能 · Thermodynamic AGI</p>
+
+<a class="btn" href="research_map.html">🗺️ Open Research Map</a>
+
+<div class="cards">
+  <div class="card">
+    <h3>📄 Papers</h3>
+    <p>Paper 1: Complementary Pairing (✅ Done)<br>Paper 2: Thermodynamic Foundations (🔄 In progress)<br>Paper 3: Component Library (💡 Concept)</p>
+    <span class="tag">github.com/simulai/ASI</span>
+  </div>
+  <div class="card">
+    <h3>🔬 Lean4 Proofs</h3>
+    <p>Machine-verified theorems: energy_convergent, fixed_point_of_limit, async convergence, attractor dynamics.</p>
+    <span class="tag">github.com/simulai/FECG_LEAN</span>
+  </div>
+  <div class="card">
+    <h3>📖 Documentation</h3>
+    <p>Bilingual (EN/ZH) research map, core narrative, AGI levels, references.</p>
+    <span class="tag">Browse the repo →</span>
+  </div>
+</div>
+
+<p class="footer">
+  <a href="https://github.com/simulai/ASI">GitHub</a> ·
+  <a href="https://github.com/simulai/FECG_LEAN">FECG_LEAN</a> ·
+  ASI © 2026 MIT License
+</p>
+</body>
+</html>
