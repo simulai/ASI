@@ -231,7 +231,7 @@ In thermodynamic terms:
 
 ---
 
-## Modularity: Why AGI Can't Be One Giant Model
+## Architectural Bottlenecks on the Path to AGI: Which Core Functions Are Fundamentally Missing in Today's LLMs?
 
 **Analogy**: The human body isn't one organ — it's a system of specialized organs. The brain handles thinking, the heart pumps blood, the lungs breathe. Each organ does one thing, and they all work together.
 
