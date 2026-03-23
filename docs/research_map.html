@@ -105,6 +105,12 @@ const nodes = [
   { id: "fep", label: "自由能原理\nFEP", type: "support",
     detail: "<h4>Free Energy Principle (FEP)</h4><p>Karl Friston 2010: 脑是自由能最小化系统。大脑通过主动推理减少自由能来维持内部稳态。</p><span class='tag'>理论根源</span>",
     x: 280, y: 180 },
+  { id: "ebaselaw", label: "e-base\nScaling Law", type: "support",
+    detail: "<h4>E-Base Scaling Law (Mathematical-Principles 2025)</h4><p>信息传递效率最优分支因子 = e ≈ 2.718。在Lean4中形式化证明。<br>这是scaling law的热力学版本：Landauer约束下的最优计算结构。<br><a href='https://github.com/simulai/Mathematical-Principles-of-Intelligence' target='_blank' style='color:#81c784'>📄 前身仓库</a></p><span class='tag'>Scaling理论</span><span class='tag'>前身</span>",
+    x: 160, y: 140 },
+  { id: "holonomy", label: "认知和乐\nℋ (Holonomy)", type: "support",
+    detail: "<h4>Cognitive Holonomy ℋ (Mathematical-Principles 2025)</h4><p>认知状态空间中的守恒拓扑荷，约束熵产生。公式 TΔS + ΔE + μΔℋ ≥ 0。<br>与吸引子拓扑同构：ℋ守恒 = 自由能landscape的拓扑不变量。<br><a href='https://github.com/simulai/Mathematical-Principles-of-Intelligence' target='_blank' style='color:#81c784'>📄 前身仓库</a></p><span class='tag'>拓扑物理</span><span class='tag'>前身</span>",
+    x: 160, y: 220 },
   { id: "landauer", label: "Landauer\n耗散原理", type: "support",
     detail: "<h4>Landauer's Principle (1961)</h4><p>每擦除1bit信息 = 必须耗散 kT·ln2 能量。计算有物理代价，这给了智能一个热力学约束。</p><span class='tag'>核心原理</span>",
     x: 280, y: 260 },
@@ -165,6 +171,12 @@ const links = [
   { s: "hopfield", t: "p2", label: "能量函数", type: "theoretical" },
   { s: "nca", t: "p2", label: "外部验证", type: "validation" },
   { s: "fecg", t: "p2", label: "形式化证明", type: "validation" },
+
+  // Mathematical-Principles → ASI 演化关系
+  { s: "ebaselaw", t: "landauer", label: "统一视角", type: "theoretical" },
+  { s: "ebaselaw", t: "fep", label: "热力学根基", type: "theoretical" },
+  { s: "holonomy", t: "fep", label: "拓扑扩展", type: "theoretical" },
+  { s: "holonomy", t: "hopfield", label: "拓扑不变", type: "theoretical" },
 
   // 实验→核心
   { s: "h1", t: "p2", label: "H1验证", type: "validation" },
