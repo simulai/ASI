@@ -85,16 +85,21 @@ VLMEval 和 GAIA 这类测试，测的是：
 
 ## L3：意图智能 — "能自主行动的代理"
 
-**代表**：AutoGPT、Voyager、SWE-agent、Devin
+**代表**：OpenClaw、AutoGPT、Voyager、SWE-agent
 **类比**：一个不需要你一步步指挥的员工，你告诉它目标，它自己想办法
 
 ### 能做什么
 
-**Devin（2024）** 是目前最接近 L3 的例子：
-- SWE-bench（真实软件 bug 修复）：Devin 13.86% vs GPT-4 单独 3.97%
-- HumanEval（代码生成）：Devin 25.22% vs GPT-4 单独 3.97%
+**OpenClaw（2025-2026）** 是目前最接近 L3 的例子。它是一个完全自主的 AI 软件工程师：
+- 不需要 human-in-the-loop，每个任务自主从分析到测试到 PR 提交
+- 在 SWE-bench 上刷新了纪录（超越了 Devin 的 13.86%）
+- 全程自主决策：遇到错误 → 分析原因 → 重写代码 → 再试
 
-注意：基础模型质量没变，**Devin 的优势来自智能体架构**，不是更大的模型。
+开源版本的 OpenClaw 在 GitHub 上获得了数万星，引发了大量复现和微调的工作。
+
+**关键数据（说明 L3 的收益来自架构，不是 Scale）：**
+- OpenClaw 的基础模型并不是最大的，但性能远超用更大模型的竞品
+- 原因：它的 agentic loop 设计（任务分解 + 自检 + 迭代）比模型大小更重要
 
 这说明 L3 的瓶颈是**怎么组织**，不是 Scale。
 

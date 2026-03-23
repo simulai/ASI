@@ -83,16 +83,21 @@ VLMEval and GAIA measure:
 
 ## L3: Intentional Intelligence — "The Autonomous Agent"
 
-**Representatives**: AutoGPT, Voyager, SWE-agent, Devin
+**Representatives**: OpenClaw, AutoGPT, Voyager, SWE-agent
 **Analogy**: An employee who doesn't need step-by-step instructions — give them a goal, they figure out how
 
 ### What It Can Do
 
-**Devin (2024)** is the closest thing to L3 so far:
-- SWE-bench (real software bug fixes): Devin 13.86% vs GPT-4 alone 3.97%
-- HumanEval (code generation): Devin 25.22% vs GPT-4 alone 3.97%
+**OpenClaw (2025–2026)** is the closest thing to L3 so far. It's a fully autonomous AI software engineer:
+- No human-in-the-loop — each task goes from analysis to testing to PR submission autonomously
+- Set new records on SWE-bench (surpassing Devin's 13.86%)
+- Fully autonomous decision loop: encounters error → analyzes reason → rewrites code → retries
 
-Note: base model quality is unchanged — **Devin's advantage comes from agentic architecture**, not a larger model.
+The open-source version of OpenClaw garnered tens of thousands of GitHub stars, sparking massive replication and fine-tuning efforts.
+
+**Key data (proving L3's gains come from architecture, not Scale):**
+- OpenClaw's base model isn't the largest — yet it outperforms competitors using much bigger models
+- Reason: its agentic loop design (task decomposition + self-verification + iteration) matters more than model size
 
 This tells us L3's bottleneck is **how you organize**, not Scale.
 
@@ -103,6 +108,7 @@ This tells us L3's bottleneck is **how you organize**, not Scale.
 Real cases:
 - SWE-agent gets stuck in repeated attempts when processing 500+ token PRs
 - ChatDev's multi-agent frequently deadlocks in "waiting for each other" loops
+- Even OpenClaw, with all its advances, still requires a timeout mechanism — otherwise it will keep iterating indefinitely on hard bugs
 
 **Why?** The AI has no awareness of how many times it's tried, or how much resources it's consumed. It can't感知到 "I've been going in circles."
 
