@@ -1,54 +1,38 @@
-# 热力学解析智能 / Thermodynamic AGI
+# Thermodynamic AGI / 热力学解析智能
 
-> **核心假设**：ASI（超级人工智能）将诞生于**自由能最小化原理**与**Landauer计算耗散**交汇处。
-> 不是更大的Transformer，不是更多的GPU——是**物理意义上的正确归纳偏置**。
+> **核心假设**: ASI 将诞生于**自由能最小化原理**与**Landauer计算耗散**的交汇处。
+> **Core Hypothesis**: ASI will emerge from **free-energy minimization** + **Landauer computational dissipation**.
 
-## 一句话说清我们在干什么
+---
 
-用热力学（自由能 landscape + Landauer耗散）统一解释 Attention、Helix、MetaGate 的共同机制，并以此设计下一代世界模型组件库。
+## [English Documentation](docs/en/README_en.md) | [中文文档](docs/zh/README_zh.md)
 
-## 目录结构
+---
 
-```
-01_脑洞区/       — 最原始想法，不证伪，不整理，直接丢
-02_理论框架/     — 脑洞→体系化，第一次凝结
-03_实验验证/     — toy实验，可复现
-04_PAPER区/      — 论文草稿，每篇独立文件夹
-05_投稿区/       — 投稿状态追踪+审稿意见
-```
+## Quick Links
 
-## 核心叙事（5分钟了解我们）
+| Document | EN | ZH |
+|----------|----|----|
+| README | [docs/en/README_en.md](docs/en/README_en.md) | [docs/zh/README_zh.md](docs/zh/README_zh.md) |
+| Core Narrative | [docs/en/narrative_en.md](docs/en/narrative_en.md) | [docs/zh/narrative_zh.md](docs/zh/narrative_zh.md) |
+| Research Map | [docs/en/map_en.md](docs/en/map_en.md) | [docs/zh/map_zh.md](docs/zh/map_zh.md) |
+| AGI Levels | [01_brainstorm/en/001_agi_levels_en.md](01_brainstorm/en/001_agi_levels_en.md) | [01_brainstorm/zh/001_agi_levels_zh.md](01_brainstorm/zh/001_agi_levels_zh.md) |
+| NCA MIT 2026 | [01_brainstorm/en/002_nca_mit2026_en.md](01_brainstorm/en/002_nca_mit2026_en.md) | [01_brainstorm/zh/002_nca_mit2026_zh.md](01_brainstorm/zh/002_nca_mit2026_zh.md) |
+| H1–H5 | [02_theory/en/h1_h5_en.md](02_theory/en/h1_h5_en.md) | [02_theory/zh/h1_h5_zh.md](02_theory/zh/h1_h5_zh.md) |
+| Landauer | [02_theory/en/landauer_en.md](02_theory/en/landauer_en.md) | [02_theory/zh/landauer_zh.md](02_theory/zh/landauer_zh.md) |
 
-### 我们相信什么
+---
 
-LLM 的问题是：**它学会了"语言"，没学会"计算"**。
-语言是表象，计算结构才是本质。MIT 2026年工作（arXiv:2603.10055）证明：
-在神经细胞自动机（NCA）数据上预训练，1.64亿token > 16亿英语token。
-迁移的不是语义，是**计算结构**。
+## Three-Paper Roadmap
 
-### 我们的理论贡献
+| # | Paper | Status | Core |
+|---|-------|--------|------|
+| 1 | Complementary Pairing | ✅ Done, ready | Helix = DNA hard bias, CTR AUC 0.716 |
+| 2 | Thermodynamic Foundations | 🔄 In progress | F = Helmholtz, Landauer, NCA validation |
+| 3 | Component Library | 💡 Concept | Landauer gate + Hopfield + routing |
 
-**热力学解析智能**（Thermodynamic Analytical Intelligence）：
-- 自由能 F = 系统的"不确定性代价"，吸引子 = 能量最低态
-- Landauer 原理：每 bit 计算 = kT·ln2 耗散
-- Attention = Helmholtz 自由能的连续近似（梯度下降）
-- Helix = DNA互补配对的硬归纳偏置（强制绑定）
-- MetaGate = 曲率触发的元认知自省（高曲率=接近跃迁点）
+---
 
-### 三篇论文路线图
+## License
 
-| 论文 | 状态 | 核心 |
-|------|------|------|
-| Paper 1 | ✅ 完成，待投 | 互补配对=特征交互归纳偏置，腾讯广告AUC 0.716 |
-| Paper 2 | 进行中 | 热力学形式化+Landauer耗散+NCA外部验证 |
-| Paper 3 | 概念阶段 | 组件库：Landauer门+Hopfield+互补门+路由 |
-
-## 与现有工作的关系
-
-- **不是**另一个 Transformer 变体
-- **不是**另一个 RAG 系统
-- **是**：把神经网络的"学习"重新解释为**热力学系统演化**，并用这个视角设计更好的组件
-
-## 作者
-
-热力学解析智能团队 — FARS 自动科研系统驱动
+MIT — free to use, build on, argue with.
