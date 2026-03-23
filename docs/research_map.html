@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>ASI 热力学解析智能 — 科研地图</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0a0a1a; color: #e0e6f0; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+  svg { width: 100vw; height: 100vh; }
+
+  .legend {
+    position: fixed; top: 20px; left: 20px; z-index: 10;
+    background: rgba(10,10,30,0.85); border: 1px solid #2a2a5a;
+    border-radius: 10px; padding: 16px 20px; font-size: 13px;
+    backdrop-filter: blur(8px);
+  }
+  .legend h3 { color: #a8c8ff; margin-bottom: 10px; font-size: 15px; letter-spacing: 1px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .legend-line { width: 24px; height: 2px; flex-shrink: 0; }
+
+  .tooltip {
+    position: fixed; z-index: 20; pointer-events: none;
+    background: rgba(10,10,30,0.92); border: 1px solid #4a4aff;
+    border-radius: 8px; padding: 12px 16px; font-size: 13px;
+    max-width: 280px; display: none; backdrop-filter: blur(8px);
+  }
+  .tooltip h4 { color: #a8c8ff; margin-bottom: 6px; }
+  .tooltip p { color: #b0b8d0; line-height: 1.5; }
+  .tooltip .tag { display: inline-block; background: #1a1a4a; color: #7aaeff;
+    border-radius: 4px; padding: 2px 6px; font-size: 11px; margin: 2px; }
+
+  .title-block {
+    position: fixed; bottom: 20px; right: 20px; z-index: 10;
+    background: rgba(10,10,30,0.85); border: 1px solid #2a2a5a;
+    border-radius: 10px; padding: 16px 20px; text-align: right;
+    backdrop-filter: blur(8px);
+  }
+  .title-block h1 { color: #a8c8ff; font-size: 18px; }
+  .title-block p { color: #7a8aaa; font-size: 12px; margin-top: 4px; }
+
+  .info-bar {
+    position: fixed; top: 20px; right: 20px; z-index: 10;
+    background: rgba(10,10,30,0.85); border: 1px solid #2a2a5a;
+    border-radius: 10px; padding: 12px 16px; font-size: 12px;
+    color: #7a8aaa; backdrop-filter: blur(8px);
+  }
+  .info-bar span { color: #a8c8ff; }
+
+  .node-label {
+    font-size: 11px; fill: #c0c8e0; pointer-events: none;
+    text-anchor: middle; dominant-baseline: middle;
+  }
+  .cluster-label {
+    font-size: 13px; fill: rgba(168,200,255,0.5);
+    letter-spacing: 2px; text-transform: uppercase;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="legend">
+  <h3>节点类型</h3>
+  <div class="legend-item"><div class="legend-dot" style="background:#4fc3f7;box-shadow:0 0 6px #4fc3f7"></div>核心论文 (Paper 1-3)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#81c784;box-shadow:0 0 6px #81c784"></div>支撑工作 (引用)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ff8a65;box-shadow:0 0 6px #ff8a65"></div>竞争路径</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ce93d8;box-shadow:0 0 6px #ce93d8"></div>形式化证明 (Lean4)</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ffca28;box-shadow:0 0 6px #ffca28"></div>实验验证 (Toy)</div>
+  <div class="legend-item"><div class="legend-line" style="background:#3a5fff"></div>理论支撑</div>
+  <div class="legend-item"><div class="legend-line" style="background:#00bcd4;opacity:0.6"></div>验证关系</div>
+  <div class="legend-item"><div class="legend-line" style="background:#ff5252;opacity:0.5"></div>竞争关系</div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<div class="info-bar">
+  节点: <span id="node-count">0</span> &nbsp;|&nbsp; 连边: <span id="edge-count">0</span>
+  &nbsp;|&nbsp; 拖拽节点 &nbsp;|&nbsp; 滚轮缩放
+</div>
+
+<div class="title-block">
+  <h1>ASI 科研地图</h1>
+  <p>热力学解析智能 · Thermodynamic AGI</p>
+  <p style="margin-top:6px;color:#4fc3f7">github.com/simulai/ASI</p>
+</div>
+
+<script>
+// ── 数据 ──────────────────────────────────────────────────────────────────────
+
+const nodes = [
+  // 核心层
+  { id: "p1", label: "Paper 1\n互补配对", type: "core",
+    detail: "<h4>Paper 1: Complementary Pairing</h4><p>Helix = DNA硬归纳偏置，特征交互AUC 0.716 vs 0.632，54%更少参数。已在KDD Cup TAAC验证。</p><span class='tag'>✅ 完成</span><span class='tag'>待投 ACL</span>",
+    x: 420, y: 310 },
+  { id: "p2", label: "Paper 2\n热力学基础", type: "core",
+    detail: "<h4>Paper 2: Thermodynamic Foundations</h4><p>F = Helmholtz自由能，Landauer耗散，NCA外部验证。吸引子=不动点，Attention=连续近似。</p><span class='tag'>🔄 进行中</span>",
+    x: 560, y: 310 },
+  { id: "p3", label: "Paper 3\n组件库", type: "core",
+    detail: "<h4>Paper 3: Component Library</h4><p>Landauer门 + Hopfield + 互补门 + 路由。模块化热力学实现。</p><span class='tag'>💡 概念</span>",
+    x: 700, y: 310 },
+
+  // 理论支撑层
+  { id: "fep", label: "自由能原理\nFEP", type: "support",
+    detail: "<h4>Free Energy Principle (FEP)</h4><p>Karl Friston 2010: 脑是自由能最小化系统。大脑通过主动推理减少自由能来维持内部稳态。</p><span class='tag'>理论根源</span>",
+    x: 280, y: 180 },
+  { id: "landauer", label: "Landauer\n耗散原理", type: "support",
+    detail: "<h4>Landauer's Principle (1961)</h4><p>每擦除1bit信息 = 必须耗散 kT·ln2 能量。计算有物理代价，这给了智能一个热力学约束。</p><span class='tag'>核心原理</span>",
+    x: 280, y: 260 },
+  { id: "hopfield", label: "Hopfield\n网络", type: "support",
+    detail: "<h4>Hopfield Networks (1982)</h4><p>能量函数 E = -½Σwᵢⱼsᵢsⱼ。吸引子 = 能量局部最小点。我们用Attention近似。</p><span class='tag'>经典基础</span>",
+    x: 280, y: 340 },
+  { id: "nca", label: "NCA\n计算结构迁移", type: "support",
+    detail: "<h4>MIT CSAIL 2026 (arXiv:2603.10055)</h4><p>神经细胞自动机数据训练LMs: 164M token > 1.6B英语token。注意力层迁移效果最好。外部独立验证！</p><span class='tag'>外部验证</span>",
+    x: 420, y: 180 },
+  { id: "fecg", label: "FECG_LEAN\n形式化证明", type: "lean",
+    detail: "<h4>Lean4 形式化证明 (FECG_LEAN)</h4><p>energy_convergent / fixed_point_of_limit / composite_energy_converges / async收敛性 — 数学上锁死热力学框架！</p><span class='tag'>形式化证明</span><span class='tag'>Mathlib</span>",
+    x: 560, y: 180 },
+
+  // 实验验证
+  { id: "h1", label: "H1\n自由能二阶导", type: "toy",
+    detail: "<h4>H1: Free Energy 2nd Derivative</h4><p>错误注入d²F时预测误差↑。ratio=1.217，INCONCLUSIVE，需更多episodes。</p><span class='tag'>Toy验证</span>",
+    x: 420, y: 420 },
+  { id: "h2", label: "H2\n吸引子收敛", type: "toy",
+    detail: "<h4>H2: Attractor Convergence</h4><p>初始F越低→收敛步数越少。在TinyGridEnv上验证。</p><span class='tag'>Toy验证</span>",
+    x: 490, y: 450 },
+  { id: "h3", label: "H3\nMetaGate曲率", type: "toy",
+    detail: "<h4>H3: MetaGate Curvature Trigger</h4><p>曲率越大→MetaGate自省触发。TinyGridEnv验证。</p><span class='tag'>Toy验证</span>",
+    x: 560, y: 420 },
+
+  // 竞争层
+  { id: "dreamer", label: "DreamerV3\n世界模型", type: "rival",
+    detail: "<h4>DeepMind DreamerV3</h4><p>世界模型+强化学习。无热力学框架，无物理论证。与我们是不同路径。</p><span class='tag'>竞争</span>",
+    x: 820, y: 200 },
+  { id: "voyager", label: "Voyager\n自主探索", type: "rival",
+    detail: "<h4>Voyager / AutoGPT</h4><p>L3规划智能体。无限循环问题，无资源感知。与我们有相同目标不同方法。</p><span class='tag'>竞争</span>",
+    x: 820, y: 280 },
+  { id: "moe", label: "MoE\n混合专家", type: "rival",
+    detail: "<h4>MoE Scaling (Jelassi 2025)</h4><p>MLP扩张增强记忆→推理能力不提升。我们用Landauer门增强推理。</p><span class='tag'>竞争</span>",
+    x: 820, y: 360 },
+
+  // 外部引用
+  { id: "vaebp", label: "VAE\n变分自编码", type: "support",
+    detail: "<h4>VAE (Kingma & Welling 2014)</h4><p>变分推断=变分自由能最小化。近似推理=能量近似。与FEP数学同构。</p>",
+    x: 160, y: 180 },
+  { id: "platonic", label: "柏拉图表征\n假说", type: "support",
+    detail: "<h4>Platonic Representation Hypothesis (Isola 2024)</h4><p>不同模态/架构的AI模型内部表征随规模增大趋同。支持跨领域迁移。</p>",
+    x: 160, y: 260 },
+  { id: "swebench", label: "SWE-bench\nDevin", type: "support",
+    detail: "<h4>SWE-bench / Devin</h4><p>Devin 13.86% vs GPT-4 3.97%。收益来自智能体架构，不是scale。→ L3瓶颈=架构设计。</p>",
+    x: 700, y: 430 },
+];
+
+const links = [
+  // 核心→核心
+  { s: "p1", t: "p2", label: "理论基础", type: "theoretical" },
+  { s: "p2", t: "p3", label: "扩展设计", type: "theoretical" },
+  { s: "p1", t: "p3", label: "组件组合", type: "theoretical" },
+
+  // 支撑→核心
+  { s: "fep", t: "p2", label: "核心原理", type: "theoretical" },
+  { s: "landauer", t: "p2", label: "核心原理", type: "theoretical" },
+  { s: "landauer", t: "p3", label: "门控设计", type: "theoretical" },
+  { s: "hopfield", t: "p2", label: "能量函数", type: "theoretical" },
+  { s: "nca", t: "p2", label: "外部验证", type: "validation" },
+  { s: "fecg", t: "p2", label: "形式化证明", type: "validation" },
+
+  // 实验→核心
+  { s: "h1", t: "p2", label: "H1验证", type: "validation" },
+  { s: "h2", t: "p2", label: "H2验证", type: "validation" },
+  { s: "h3", t: "p2", label: "H3验证", type: "validation" },
+
+  // 竞争
+  { s: "dreamer", t: "p2", label: "不同路径", type: "rival" },
+  { s: "voyager", t: "p2", label: "不同路径", type: "rival" },
+  { s: "moe", t: "p2", label: "不同路径", type: "rival" },
+
+  // 引用关联
+  { s: "fep", t: "landauer", label: "交叉", type: "theoretical" },
+  { s: "fep", t: "vaebp", label: "同构", type: "theoretical" },
+  { s: "fep", t: "nca", label: "支撑", type: "validation" },
+  { s: "platonic", t: "nca", label: "交叉验证", type: "validation" },
+  { s: "fecg", t: "landauer", label: "同构", type: "theoretical" },
+  { s: "hopfield", t: "fecg", label: "形式化", type: "validation" },
+  { s: "swebench", t: "voyager", label: "数据", type: "validation" },
+];
+
+const typeColor = {
+  core: "#4fc3f7", support: "#81c784", rival: "#ff8a65",
+  lean: "#ce93d8", toy: "#ffca28"
+};
+const linkColor = {
+  theoretical: "#3a5fff", validation: "#00bcd4", rival: "#ff5252"
+};
+
+// ── 可视化 ────────────────────────────────────────────────────────────────────
+
+const svg = d3.select("body").append("svg");
+const g = svg.append("g");
+
+svg.append("defs").append("marker")
+  .attr("id", "arrowhead").attr("markerWidth", 8).attr("markerHeight", 6)
+  .attr("refX", 20).attr("refY", 3).attr("orient", "auto")
+  .append("polygon")
+  .attr("points", "0 0, 8 3, 0 6")
+  .attr("fill", "rgba(100,120,180,0.5)");
+
+const zoom = d3.zoom().scaleExtent([0.3, 3])
+  .on("zoom", e => g.attr("transform", e.transform));
+svg.call(zoom);
+
+// 力导向
+const simulation = d3.forceSimulation(nodes)
+  .force("link", d3.forceLink(links).id(d => d.id).distance(120).strength(0.4))
+  .force("charge", d3.forceManyBody().strength(-400))
+  .force("center", d3.forceCenter(window.innerWidth/2, window.innerHeight/2))
+  .force("collision", d3.forceCollide(45))
+  .alpha(0.3).restart();
+
+// 连边
+const link = g.append("g").attr("class", "links")
+  .selectAll("line").data(links).join("line")
+  .attr("stroke", d => linkColor[d.type] || "#333")
+  .attr("stroke-opacity", d => d.type === "rival" ? 0.4 : 0.6)
+  .attr("stroke-width", d => d.type === "rival" ? 1 : 1.5)
+  .attr("marker-end", "url(#arrowhead)");
+
+// 节点
+const node = g.append("g").attr("class", "nodes")
+  .selectAll("g").data(nodes).join("g")
+  .attr("class", "node")
+  .call(d3.drag()
+    .on("start", (e, d) => { if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+    .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y; })
+    .on("end", (e, d) => { if (!e.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; }));
+
+// 光晕
+node.append("circle")
+  .attr("r", 22).attr("fill", "none")
+  .attr("stroke", d => typeColor[d.type]).attr("stroke-width", 1.5)
+  .attr("stroke-opacity", 0.3).attr("stroke-dasharray", "3,3")
+  .attr("class", "ring");
+
+// 主体圆
+node.append("circle")
+  .attr("r", 18).attr("fill", d => typeColor[d.type])
+  .attr("fill-opacity", 0.15)
+  .attr("stroke", d => typeColor[d.type]).attr("stroke-width", 2)
+  .style("filter", d => `drop-shadow(0 0 8px ${typeColor[d.type]}80)`);
+
+// 标签
+node.append("text").attr("class", "node-label").each(d => {
+  const lines = d.label.split("\n");
+  lines.forEach((l, i) => {
+    d3.select(this.parentNode).append("text")
+      .attr("class", "node-label")
+      .attr("y", -4 + i * 13)
+      .attr("font-size", d.type === "core" ? "12px" : "10px")
+      .attr("font-weight", d.type === "core" ? "bold" : "normal")
+      .attr("fill", d.type === "core" ? "#e0f0ff" : "#b0c0d8")
+      .text(l);
+  });
+});
+
+// 悬停
+const tooltip = document.getElementById("tooltip");
+node.on("mouseover", (e, d) => {
+  tooltip.style.display = "block";
+  tooltip.style.left = (e.clientX + 14) + "px";
+  tooltip.style.top = (e.clientY - 20) + "px";
+  tooltip.innerHTML = d.detail;
+}).on("mousemove", (e) => {
+  tooltip.style.left = (e.clientX + 14) + "px";
+  tooltip.style.top = (e.clientY - 20) + "px";
+}).on("mouseout", () => { tooltip.style.display = "none"; });
+
+simulation.on("tick", () => {
+  link
+    .attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+    .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+  node.attr("transform", d => `translate(${d.x},${d.y})`);
+});
+
+document.getElementById("node-count").textContent = nodes.length;
+document.getElementById("edge-count").textContent = links.length;
+</script>
+</body>
+</html>
