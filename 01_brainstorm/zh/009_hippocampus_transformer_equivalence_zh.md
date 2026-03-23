@@ -137,13 +137,14 @@ Transformer（注意力 = 能量景观优化）
 
 ## 论文来源说明
 
-本地论文库：`E:\BaiduSyncdisk\papers\hippocampus_transformer\`
-
 完整论文列表：
-- ✅ Whittington et al. (2022) — `2112.04035_whittington_hippocampus_transformer.pdf`
-- ✅ Caucheteux & King (2022) — `Brains-and-algorithms-partially--converge-in-natural-language-processing_s42003-022-03036-1.pdf`
-- ✅ Goldstein et al. (2023) — `2310.07106_goldstein_temporal_language_brain.pdf`
-- ✅ Zada et al. (2025) — `2506.20489_zada_brains_lm_converge.pdf`
-- ✅ Lin et al. (2025) — `2504.10739_lin_hippomm.pdf`
-- ✅ Ahn (2025) — `2504.16754_ahn_hema.pdf`
-- ✅ Schrimpf et al. (2021) — `schrimpf-et-al-2021-the-neural-architecture-of-language-integrative-modeling-converges-on-predictive-processing.pdf`
+
+| 论文 | 链接 | 核心贡献 |
+|------|------|---------|
+| Whittington et al. (2022) | [arXiv:2112.04035](https://arxiv.org/abs/2112.04035) / [Nature Communications Biology](https://www.nature.com/articles/s42003-022-03036-1) | 海马体在数学上等效于 Transformer |
+| Caucheteux & King (2022) | [Nature Communications Biology](https://www.nature.com/articles/s42003-022-03036-1) | Transformer 像大脑的核心驱动力是"从上下文预测词" |
+| Schrimpf et al. (2021) | [bioRxiv preprint](https://www.biorxiv.org/content/10.1101/2020.07.14.200437v1) / [PNAS](https://www.pnas.org/doi/10.1073/pnas.2220307219) | 43种模型对比，Transformer 全面领先 |
+| Goldstein et al. (2023) | [arXiv:2310.07106](https://arxiv.org/abs/2310.07106) | DLM 层深度镜像大脑神经活动时序 |
+| Zada et al. (2025) | [arXiv:2506.20489](https://arxiv.org/abs/2506.20489) | 中/英/法 LLM 中间层收敛到共享语义空间 |
+| Lin et al. (2025) | [arXiv:2504.10739](https://arxiv.org/abs/2504.10739) | HippoMM：海马启发的多模态记忆 |
+| Ahn (2025) | [arXiv:2504.16754](https://arxiv.org/abs/2504.16754) | HEMA：双记忆系统 |

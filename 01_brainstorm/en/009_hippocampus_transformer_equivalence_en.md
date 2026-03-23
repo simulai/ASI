@@ -137,13 +137,14 @@ This provides **double validation** for the entire framework:
 
 ## Papers Source
 
-Local papers directory: `E:\BaiduSyncdisk\papers\hippocampus_transformer\`
-
 Full papers list:
-- ✅ Whittington et al. (2022) — `2112.04035_whittington_hippocampus_transformer.pdf`
-- ✅ Caucheteux & King (2022) — `Brains-and-algorithms-partially--converge-in-natural-language-processing_s42003-022-03036-1.pdf`
-- ✅ Goldstein et al. (2023) — `2310.07106_goldstein_temporal_language_brain.pdf`
-- ✅ Zada et al. (2025) — `2506.20489_zada_brains_lm_converge.pdf`
-- ✅ Lin et al. (2025) — `2504.10739_lin_hippomm.pdf`
-- ✅ Ahn (2025) — `2504.16754_ahn_hema.pdf`
-- ✅ Schrimpf et al. (2021) — `schrimpf-et-al-2021-the-neural-architecture-of-language-integrative-modeling-converges-on-predictive-processing.pdf`
+
+| Paper | Link | Key Contribution |
+|-------|------|-----------------|
+| Whittington et al. (2022) | [arXiv:2112.04035](https://arxiv.org/abs/2112.04035) / [Nature Communications Biology](https://www.nature.com/articles/s42003-022-03036-1) | Hippocampus is mathematically equivalent to Transformer |
+| Caucheteux & King (2022) | [Nature Communications Biology](https://www.nature.com/articles/s42003-022-03036-1) | Transformers resemble the brain because of "word prediction from context" |
+| Schrimpf et al. (2021) | [bioRxiv preprint](https://www.biorxiv.org/content/10.1101/2020.07.14.200437v1) / [PNAS](https://www.pnas.org/doi/10.1073/pnas.2220307219) | 43 models compared — Transformers lead across all benchmarks |
+| Goldstein et al. (2023) | [arXiv:2310.07106](https://arxiv.org/abs/2310.07106) | DLM layer depth mirrors brain neural activity timing |
+| Zada et al. (2025) | [arXiv:2506.20489](https://arxiv.org/abs/2506.20489) | EN/CN/FR LLMs converge to shared semantic space in middle layers |
+| Lin et al. (2025) | [arXiv:2504.10739](https://arxiv.org/abs/2504.10739) | HippoMM: Hippocampal-inspired multimodal memory |
+| Ahn (2025) | [arXiv:2504.16754](https://arxiv.org/abs/2504.16754) | HEMA: Dual-memory system |
