@@ -1,4 +1,4 @@
-# AGI Levels — Comprehensive Insights
+# AGI Levels: Where Does Your AI Assistant Sit?
 
 > Source: AGI Levels Systematic Survey
 > Compiled by: FARS Automatic Research System
@@ -6,213 +6,252 @@
 
 ---
 
-## L1: Emergent Intelligence
+## TL;DR: Current Benchmarks Can't Measure Real Intelligence
+
+Every existing benchmark has the same fundamental flaw: **they measure "task completion rate," not "intelligence quality."**
+
+It's like judging athletes by "dunk success rate" — dunking is impressive, but it tells you nothing about tactical awareness, teamwork, or longevity.
+
+Each level below answers three questions:
+- **What can it actually do?** (concrete examples)
+- **What does it completely fail at?** (specific failure cases)
+- **Why is it stuck here?** (root cause)
+
+---
+
+## L1: Emergent Intelligence — "The Memory Genius"
 
 **Representatives**: GPT-2/3/4, Claude, Gemini
-**Benchmark**: ImageNet, SST-2 (mature)
+**Analogy**: A student who has memorized the entire library but has never left the classroom
 
-### Core Technologies
-- Attention / Transformer
-- Pre-training + Scaling
-- In-context learning
+### What It Can Do
 
-### Core Capability
-In-distribution generalization: performs well on seen patterns.
+- Write essays, answer common-sense questions (SST-2, ImageNet — solved)
+- Translate, summarize, complete code
+- Handles slight input variations if it saw something similar during training
 
-### Core Bottlenecks
-- Long-tail / out-of-distribution failure
-- Compositional generalization:记住了见过 → 无法合成未见
-- Hallucination (World Model inconsistency)
+### What It Completely Fails At
 
----
+**Classic test**: Change "Xiao Ming has 3 apples, gives 2 to Little Red — how many left?" to "Xiao Ming has 3 apples, Little Red gives Xiao Ming 2 apples — how many left?" — L1 models will likely get it wrong.
 
-## L2: Intuitive Intelligence
+This is **compositional generalization failure**: they memorized every problem they encountered, but never learned the underlying concept of "subtraction."
 
-**Representatives**: GPT-4 + RAG + Tool use
-**Benchmark**: VLMEval / GAIA (but measures task completion rate, **NOT** World Model quality)
+Another problem: **hallucination**. Confidently stating false things as facts. Ask about a real but obscure paper, and it may invent a completely fake author and year.
 
-### Core Technologies
-- World Model (世界模型)
-- Planning
-- RAG / Tool use
+### Why It's Stuck Here
 
-### Core Capability
-Out-of-distribution generalization: has goals, can decompose into subtasks.
+L1 is fundamentally doing "pattern matching" — finding the most common answer pattern in training data and repeating it.
 
-### Core Bottlenecks
-- Hallucination detection (World Model inconsistent with reality)
-- **No reliable standard** for validating and evaluating World Model quality
-- Relies on prompt engineering, lacks physical grounding
+**This is not understanding. It's sophisticated memorization.**
 
-### Key Insight
-**Benchmark Mismatch**: VLMEval/GAIA measure task completion, but the L2→L3 gap is fundamentally about World Model quality, not completion rate.
-World Model quality should be measured by:
-- Prediction error on unseen dynamics
-- Zero-shot generalization to new tasks
-- Abstraction level of representations
+| Dimension | L1 Model | Real Understanding |
+|-----------|---------|-------------------|
+| Seen "cat on sofa" | ✓ answers correctly | ✓ answers correctly |
+| Never-seen combination | likely wrong | normal inference |
+| Knows when it doesn't know? | **No** | Yes |
 
 ---
 
-## L3: Intentional Intelligence
+## L2: Intuitive Intelligence — "The Research Assistant"
+
+**Representatives**: GPT-4 + RAG (Retrieval-Augmented Generation) + tool use
+**Analogy**: A smart assistant who you know will look things up before answering
+
+### What It Can Do
+
+- Connected to search engines — can answer real-time questions
+- Can call APIs, write and execute code, read PDFs
+- Can break down "analyze this month's sales data" into: fetch data → plot → write report
+
+### What It Completely Fails At
+
+**Hallucination in a new form**: it's better at packaging answers — mixing retrieved facts with fabricated ones so seamlessly you can't tell.
+
+**Bigger problem: World Model quality is unmeasurable.** What is a World Model? It's the AI's internal representation of "how the world works."
+
+Example: Ask AI "if I put a water bottle in the freezer, what happens tomorrow?" Getting this right means its World Model includes "water freezes below 0°C." But we have **no reliable way to test World Model quality**. All existing benchmarks measure task completion rate, which is entirely different from "understanding the physical world."
+
+### Benchmark Mismatch: The Overlooked Killer Issue
+
+VLMEval and GAIA measure:
+- "Can the AI complete this task?" ✅ measurable
+- "How accurate is the AI's model of the world?" ❌ **completely untestable**
+
+**This creates a dangerous blind spot**: two L2 AIs scoring the same on benchmarks could have wildly different World Models — one close to human physical intuition, the other just better at searching. We have no way to tell.
+
+---
+
+## L3: Intentional Intelligence — "The Autonomous Agent"
 
 **Representatives**: AutoGPT, Voyager, SWE-agent, Devin
-**Benchmark**: SWE-bench / HumanEval (measures task completion, not World Model quality)
+**Analogy**: An employee who doesn't need step-by-step instructions — give them a goal, they figure out how
 
-### Core Technologies
-- Meta-Learning
-- Self-Evolution
-- Autonomous planning and exploration
+### What It Can Do
 
-### Core Capability
-Learning to learn; autonomous exploration on complex tasks not covered in training.
+**Devin (2024)** is the closest thing to L3 so far:
+- SWE-bench (real software bug fixes): Devin 13.86% vs GPT-4 alone 3.97%
+- HumanEval (code generation): Devin 25.22% vs GPT-4 alone 3.97%
 
-### Devin Key Data (2024)
-- SWE-bench: Devin 13.86% vs GPT-4 3.97%
-- HumanEval: Devin 25.22% vs GPT-4 3.97%
-- Gains come from **agentic architecture**, not base model quality improvement
+Note: base model quality is unchanged — **Devin's advantage comes from agentic architecture**, not a larger model.
 
-### Core Bottleneck
-**Inf Loop (infinite loop) is the fundamental problem of L3+ agents**
-- No resource awareness: doesn't know how much compute has been consumed
-- No self-correction: cannot autonomously discover errors
-- No World Model evaluation standard
+This tells us L3's bottleneck is **how you organize**, not Scale.
 
-### Key Insight
-Devin's gains = agentic architecture, not larger models
-→ L3's bottleneck is **architectural design**, not Scale
+### What It Completely Fails At
 
----
+**Infinite loops (Inf Loops)** — L3's fatal flaw.
 
-## L4: Reflexive Intelligence
+Real cases:
+- SWE-agent gets stuck in repeated attempts when processing 500+ token PRs
+- ChatDev's multi-agent frequently deadlocks in "waiting for each other" loops
 
-**Representatives**: Researcher-agent, Scientist-agent
-**Benchmark**: Non-existent
+**Why?** The AI has no awareness of how many times it's tried, or how much resources it's consumed. It can't感知到 "I've been going in circles."
 
-### Core Technologies
-- Meta-Learning
-- Self-Correction (metacognitive self-correction)
+**Analogy**: Imagine a GPS that doesn't know it's driving in circles — it will navigate forever.
 
-### Core Capability
-Self-improvement; learning to adjust one's own learning strategies.
+### Root Cause
 
-### Core Bottlenecks
-- **Poor resource awareness in multi-agent** (ChatDev/SWE-agent infinite loops)
-- Value Alignment
-- No thermodynamic "cost signal"
+L3 lacks a **resource awareness signal**. Humans感知 when we've been stuck on a problem for a long time — this perception comes from metabolic cost in the nervous system.
 
-### Key Insight
-L4 multi-agent bottleneck = **no computational cost signal**:
-- Doesn't know how much resource each action consumed
-- No mechanism to proactively interrupt when cost is too high
-- Landauer dissipation = natural "resource awareness signal"
+AI has no such physical signal. It can't感知 when it's wasting compute.
 
 ---
 
-## L5: Organizational Intelligence
+## L4: Reflexive Intelligence — "The Self-Reflecting Researcher"
 
-**Representatives**: Does not yet exist (2026)
-**Benchmark**: Non-existent
+**Representatives**: Researcher-agent, Scientist-agent (immature as of 2026)
+**Analogy**: A researcher who doesn't just complete tasks, but asks "Why did I do it this way? How can I improve next time?"
 
-### Core Technologies
-- Multi-Agent
-- Value Alignment
+### What It Can Do (In Theory)
 
-### Core Bottlenecks
-- Goal alignment
-- Resource allocation
-- No proven multi-agent collaboration yet
+AI can examine its own reasoning process, detect errors, and self-correct — without human prompting.
 
----
+### What It Completely Fails At
 
-## Cross-Level Technology Comparison
+**Multi-agent collaboration disaster**:
 
-| Level | Core Technology | Missing |
-|-------|----------------|---------|
-| L1 | Attention, Transformer, Scaling | No compositional generalization |
-| L2 | World Model, Planning | World Model quality unmeasurable |
-| L3 | Meta-Learning, Self-Evolution | Inf loops, no resource awareness |
-| L4 | Multi-Agent, Alignment | No resource cost signal |
+When you put multiple L3/L4 AIs together:
+- None of them "knows" what the whole team is doing
+- None can judge "this subtask has been stuck in a loop"
+- Resource waste scales exponentially
 
----
+**This is not a capability problem. It's an architectural problem.**
 
-## Key Insight: System 1 vs System 2
+### L4's Energy Dilemma
 
-- **System 1** (L1): Fast, automatic, unconscious = Attention / pattern matching
-- **System 2** (L3): Slow, conscious, logical = World Model + Planning + Meta-Learning
+| System | Power |
+|--------|-------|
+| Human brain | ~20 watts (about one light bulb) |
+| One GPT conversation | ~3 Wh |
+| Google AI total | ~200 watts |
+| Training one large model | hundreds of kWh to MWh |
 
-L2→L3 = jump from "intuitive matching" to "intentional planning"
-Obstacle: **no physical foundation**, all prompt engineering
+The human brain solves everything with 20 watts, including reflection. AI uses hundreds of watts and still can't感知 "Am I wasting effort?"
+
+**Landauer's principle** is the key here: every bit erased = kT·ln2 heat dissipated. This physical dissipation = the AI's "workload" signal. If this could be wired into AI's decision loop, it would have genuine perception of "what it's doing."
 
 ---
 
-## Key Insight: Training Scaling vs Inference Scaling
+## L5: Organizational Intelligence — "An AI Civilization"
+
+**Representatives**: Does not exist yet (2026)
+**Analogy**: Not one AI, but multiple AIs forming a shared-purpose organization
+
+### What It Can Do (In Theory)
+
+Imagine multiple specialized AIs (code, research, ethics, law) forming a team with shared goals, autonomous task division, and conflict resolution.
+
+### Core Challenges
+
+- **Goal alignment**: each AI's sub-goals must not conflict with the overall objective
+- **Resource allocation**: who does what? When does who intervene?
+- **Stability**: multi-AI interactions must not produce emergent unexpected behavior
+
+---
+
+## Quick Reference: What Actually Separates Each Level
+
+| Level | Like a... | Core Capability | Fatal Weakness |
+|-------|-----------|----------------|----------------|
+| L1 | Memory genius, memorized the whole library | Pattern matching | Breaks on anything new |
+| L2 | Research assistant with search access | Tool use, planning | World Model quality is untestable |
+| L3 | Autonomous agent, doesn't need hand-holding | Self-directed exploration | Infinite loops, no resource awareness |
+| L4 | Self-reflecting researcher | Metacognitive self-correction | Multi-agent coordination collapses |
+| L5 | AI civilization | Multi-agent organization | Goal alignment unsolved |
+
+---
+
+## System 1 vs System 2: Why L2→L3 Is the Hardest Gap
+
+**System 1** (intuitive/fast): sees problem, gives answer, no effort
+**System 2** (rational/slow): has a plan, thinks step by step, self-aware about process
+
+L1 = pure System 1
+L3 = System 1 + System 2 hybrid
+
+**L2→L3 obstacle**: we don't know how to give AI a "System 2感知." Current System 2 is all simulated via prompt engineering — there's no physical grounding.
+
+---
+
+## Training Scaling vs Inference Scaling: Two Different Paths
 
 | | Training Scaling | Inference Scaling |
 |---|---|---|
 | Representative | GPT-3 (Chinchilla) | OpenAI o1 |
-| Core | compute-optimal | more inference = better reasoning |
+| Core idea | How much compute to use during training optimally | More inference compute = better answers |
 | Law | LLM scaling law | Inference scaling law (different!) |
 
----
+**Key difference**: Training Scaling = "feed the model more data." Inference Scaling = "let the model think longer."
 
-## Key Insight: Energy Comparison
-
-| System | Energy |
-|--------|--------|
-| Human brain | ~20W |
-| Claude conversation | ~3Wh/turn |
-| Google AI total | 10× human brain (~200W) |
-| One LLM training run | hundreds of kilowatts |
-
-**Key insight**: Inf Loop = infinite energy drain.
-Lack of resource awareness → L3+ agents may waste massive compute in ineffective loops.
+o1/o3's success demonstrates: **inference-time compute has intrinsic value**, beyond just model size.
 
 ---
 
-## Key Insight: Embodied Cognition
+## Embodied Cognition: The Gap Between Digital AI and the Real World
 
-**Embodied hypothesis**: Physical interaction produces more stable World Model.
+**Embodied hypothesis**: to truly understand the physical world, you must interact with it — not just read about it.
 
-- Embodied AI: more reliable World Model, but **extremely high energy cost**
-- Digital AI: lower energy, but World Model depends on language priors
+Examples:
+- Digital AI learns "water flows downhill" from text; embodied AI learns it by watching water actually flow down a slope
+- The former relies on language priors; the latter relies on physical experience
 
-**Core question** (directly related to our research):
-> Under energy constraints, is there a **Pareto optimal** between embodiment frequency and World Model quality?
+**Core question for our research**:
 
-Thermodynamic modeling:
-- Embodiment interaction = reduces free-energy gradient
-- Each interaction = Landauer dissipation cost
-- Pareto frontier = balance between free-energy minimization + dissipation minimization
+> Under energy constraints, is there a **Pareto optimal** between embodiment interaction frequency and World Model accuracy?
 
----
-
-## Key Insight: Modularity as AGI Foundation
-
-**Why modularity is indispensable**:
-1. **Knowledge organization**: modularity systematizes complex knowledge
-2. **Parallel development**: independent modules can iterate separately
-3. **Specialized optimization**: each module can be targeted for improvement
-4. **Interpretability**: module boundaries = causal boundaries
-
-→ This is exactly the core thesis of Paper 3 (Component Library):
-Landauer gate + Hopfield + Complementary gate + Routing = thermodynamic implementation of modularity.
+In thermodynamic terms:
+- Embodiment interaction = reduces free-energy gradient (more accurate World Model)
+- Each interaction = Landauer dissipation cost (physical price)
+- Pareto frontier = minimum physical interaction needed to achieve acceptable World Model accuracy
 
 ---
 
-## Mapping to Our Thermodynamic Framework
+## Modularity: Why AGI Can't Be One Giant Model
 
-| AGI Level | Thermodynamic Interpretation |
-|-----------|------------------------------|
-| L1 | Attractor basin in free-energy landscape |
-| L2 | Basin edges between attractors (compositional generalization failure point) |
-| L3 | Saddle-point transitions between attractors (requires World Model navigation) |
-| L4 | Curvature-triggered MetaGate introspection |
-| L5 | Synchronization and competition in multi-attractor systems |
+**Analogy**: The human body isn't one organ — it's a system of specialized organs working together.
 
-| Problem We Solve | Position in AGI Framework |
-|-----------------|--------------------------|
-| World Model quality evaluation | Core of L2→L3 gap |
-| Attention = physical approximation | Physical grounding for L1 |
-| MetaGate curvature introspection | Resource awareness for L4 |
-| Landauer dissipation | Computational cost signal at all levels |
-| NCA computational structure transfer | Physical explanation for L2→L3 |
+Why modularity matters:
+1. **Knowledge isolation**: different modules handle different things without interference
+2. **Interpretability**: when something breaks, you know exactly where
+3. **Specialization**: each module can be trained on different data
+4. **Parallel development**: multiple teams can work on different modules simultaneously
+
+**This is exactly the core thesis of Paper 3**:
+
+- **Landauer gate**: physical dissipation as a cost signal
+- **Hopfield attractor**: stable knowledge storage unit
+- **Complementary gate**: selective information flow
+- **Routing mechanism**: dynamic decision about who handles what
+
+---
+
+## Thermodynamic Mapping: Where Our Research Fits on the AGI Roadmap
+
+| AGI Level | Thermodynamic Interpretation | What We Provide |
+|-----------|------------------------------|----------------|
+| L1 | Attractor basin in free-energy landscape | Attention = continuous physical free-energy minimization |
+| L2 | Basin edges between attractors (compositional generalization failure point) | Helix = discrete forcing into low-energy attractors |
+| L3 | Saddle-point transitions between attractors | MetaGate = curvature-triggered metacognitive interruption |
+| L4 | Curvature-triggered MetaGate | Landauer = computational cost signal at all levels |
+| L5 | Synchronization and competition in multi-attractor systems | NCA structural transfer = physical explanation for L2→L3 |
+
+**In plain terms**: our work gives every AGI level a thermodynamic foundation — making AI genuinely "aware" of what it's doing, rather than simulating cognition through prompt engineering.
