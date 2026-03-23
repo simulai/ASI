@@ -55,6 +55,17 @@
 
 ---
 
+
+### [2026-03-23] Lean4形式化证明：能量景观吸引子动力学
+- 类型：theory | 标签：收敛性, 形式化, 证明, 吸引子
+- 摘要：
+Lean4 形式化证明工作：FECG_LEAN (Formalized Energy-Based Concept Generation)
+
+核心内容：
+1. FECG_LEAN.lean — 单模态吸引子动力学形式化
+   - energy_antitone: 能量序列单调不增
+   - energy_convergent: 能量序列收敛到下确界
+   - fixed_point_of_limi...
 ## 研究空白（我们填补的gap）
 
 ### Gap 1: L3世界模型无评估标准
