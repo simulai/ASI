@@ -135,7 +135,15 @@ This provides **double validation** for the entire framework:
 
 ---
 
-## Papers to Add
+## Papers Source
 
-- ❌ **Schrimpf et al. (2021)** — *The neural architecture of language: Integrative modeling converges on predictive processing* (PNAS). Analyzed 43 neural network models and found Transformer is the strongest at predicting human brain language area activity. If you can access this paper, please add it to the papers directory.
-- ❌ **"Brains and algorithms partially converge in natural language processing"** — possibly related to Zada et al. (2506.20489), pending confirmation.
+Local papers directory: `E:\BaiduSyncdisk\papers\hippocampus_transformer\`
+
+Full papers list:
+- ✅ Whittington et al. (2022) — `2112.04035_whittington_hippocampus_transformer.pdf`
+- ✅ Goldstein et al. (2023) — `2310.07106_goldstein_temporal_language_brain.pdf`
+- ✅ Zada et al. (2025) — `2506.20489_zada_brains_lm_converge.pdf`
+- ✅ Lin et al. (2025) — `2504.10739_lin_hippomm.pdf`
+- ✅ Ahn (2025) — `2504.16754_ahn_hema.pdf`
+- ✅ Schrimpf et al. (2021) — `schrimpf-et-al-2021-the-neural-architecture-of-language-integrative-modeling-converges-on-predictive-processing.pdf`
+- ❌ "Brains and algorithms partially converge" — possibly an earlier version of Zada et al., pending confirmation

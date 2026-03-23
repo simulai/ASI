@@ -135,7 +135,15 @@ Transformer（注意力 = 能量景观优化）
 
 ---
 
-## 待补充的论文
+## 论文来源说明
 
-- ❌ **Schrimpf et al. (2021)** — *The neural architecture of language: Integrative modeling converges on predictive processing* (PNAS)。这篇论文分析了43种神经网络模型，发现 Transformer 是目前预测人类大脑语言区活动最强的架构。如果能下载到 PDF，请放在本目录。
-- ❌ **"Brains and algorithms partially converge in natural language processing"** — 可能是 Zada et al. (2506.20489) 的早期版本或相关论文，待确认。
+本地论文库：`E:\BaiduSyncdisk\papers\hippocampus_transformer\`
+
+完整论文列表：
+- ✅ Whittington et al. (2022) — `2112.04035_whittington_hippocampus_transformer.pdf`
+- ✅ Goldstein et al. (2023) — `2310.07106_goldstein_temporal_language_brain.pdf`
+- ✅ Zada et al. (2025) — `2506.20489_zada_brains_lm_converge.pdf`
+- ✅ Lin et al. (2025) — `2504.10739_lin_hippomm.pdf`
+- ✅ Ahn (2025) — `2504.16754_ahn_hema.pdf`
+- ✅ Schrimpf et al. (2021) — `schrimpf-et-al-2021-the-neural-architecture-of-language-integrative-modeling-converges-on-predictive-processing.pdf`
+- ❌ "Brains and algorithms partially converge" — 可能是 Zada et al. 早期版本，待确认
