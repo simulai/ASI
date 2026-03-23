@@ -141,9 +141,9 @@ Transformer（注意力 = 能量景观优化）
 
 完整论文列表：
 - ✅ Whittington et al. (2022) — `2112.04035_whittington_hippocampus_transformer.pdf`
+- ✅ Caucheteux & King (2022) — `Brains-and-algorithms-partially--converge-in-natural-language-processing_s42003-022-03036-1.pdf`
 - ✅ Goldstein et al. (2023) — `2310.07106_goldstein_temporal_language_brain.pdf`
 - ✅ Zada et al. (2025) — `2506.20489_zada_brains_lm_converge.pdf`
 - ✅ Lin et al. (2025) — `2504.10739_lin_hippomm.pdf`
 - ✅ Ahn (2025) — `2504.16754_ahn_hema.pdf`
 - ✅ Schrimpf et al. (2021) — `schrimpf-et-al-2021-the-neural-architecture-of-language-integrative-modeling-converges-on-predictive-processing.pdf`
-- ❌ "Brains and algorithms partially converge" — 可能是 Zada et al. 早期版本，待确认
