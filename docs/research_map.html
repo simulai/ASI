@@ -1,301 +1,552 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>ASI 热力学解析智能 — 科研地图</title>
-<script src="https://d3js.org/d3.v7.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASI Research Map — Thermodynamic AGI</title>
+<script src="https://unpkg.com/d3@7/dist/d3.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: #0a0a1a; color: #e0e6f0; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+  body { background: #0a0a1a; color: #e0e6f0; font-family: 'Segoe UI', Arial, sans-serif; overflow: hidden; }
   svg { width: 100vw; height: 100vh; }
 
-  .legend {
-    position: fixed; top: 20px; left: 20px; z-index: 10;
-    background: rgba(10,10,30,0.85); border: 1px solid #2a2a5a;
-    border-radius: 10px; padding: 16px 20px; font-size: 13px;
+  /* ── Top bar ── */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 20px;
+    background: rgba(10,10,26,0.9);
+    border-bottom: 1px solid #1e1e40;
     backdrop-filter: blur(8px);
   }
-  .legend h3 { color: #a8c8ff; margin-bottom: 10px; font-size: 15px; letter-spacing: 1px; }
-  .legend-item { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
-  .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
-  .legend-line { width: 24px; height: 2px; flex-shrink: 0; }
+  .topbar-title { font-size: 15px; color: #a8c8ff; font-weight: bold; letter-spacing: 1px; }
+  .topbar-title span { color: #5a7aaa; font-weight: normal; font-size: 12px; }
+  .lang-btn {
+    background: #1a2a5a; border: 1px solid #3a5aff;
+    color: #7aaeff; border-radius: 6px; padding: 5px 14px;
+    cursor: pointer; font-size: 12px;
+    transition: all 0.15s;
+  }
+  .lang-btn:hover { background: #2a4a9a; }
+  .lang-btn.active { background: #3a5aff; color: #fff; }
 
+  /* ── Legend ── */
+  .legend {
+    position: fixed; top: 60px; left: 16px; z-index: 10;
+    background: rgba(10,10,30,0.88); border: 1px solid #2a2a5a;
+    border-radius: 10px; padding: 14px 18px; font-size: 12px;
+    backdrop-filter: blur(8px); max-width: 200px;
+  }
+  .legend h3 { color: #a8c8ff; margin-bottom: 10px; font-size: 13px; letter-spacing: 0.5px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; margin: 5px 0; }
+  .legend-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+  .legend-line { width: 22px; height: 2px; flex-shrink: 0; }
+
+  /* ── Tooltip ── */
   .tooltip {
     position: fixed; z-index: 20; pointer-events: none;
-    background: rgba(10,10,30,0.92); border: 1px solid #4a4aff;
+    background: rgba(8,8,24,0.95); border: 1px solid #4a4aff;
     border-radius: 8px; padding: 12px 16px; font-size: 13px;
-    max-width: 280px; display: none; backdrop-filter: blur(8px);
+    max-width: 300px; display: none; backdrop-filter: blur(10px);
+    line-height: 1.5; color: #c0c8e0;
   }
-  .tooltip h4 { color: #a8c8ff; margin-bottom: 6px; }
-  .tooltip p { color: #b0b8d0; line-height: 1.5; }
-  .tooltip .tag { display: inline-block; background: #1a1a4a; color: #7aaeff;
-    border-radius: 4px; padding: 2px 6px; font-size: 11px; margin: 2px; }
+  .tooltip h4 { color: #a8c8ff; margin-bottom: 6px; font-size: 14px; }
+  .tooltip p { margin: 4px 0; }
+  .tooltip .tag {
+    display: inline-block; background: #1a1a4a; color: #7aaeff;
+    border-radius: 4px; padding: 2px 7px; font-size: 11px; margin: 2px 2px 2px 0;
+  }
+  .tooltip .link-btn {
+    display: inline-block; margin-top: 6px;
+    color: #4fc3f7; text-decoration: none; font-size: 12px;
+  }
+  .tooltip .link-btn:hover { text-decoration: underline; }
 
-  .title-block {
-    position: fixed; bottom: 20px; right: 20px; z-index: 10;
+  /* ── Bottom bar ── */
+  .bottombar {
+    position: fixed; bottom: 16px; right: 16px; z-index: 10;
     background: rgba(10,10,30,0.85); border: 1px solid #2a2a5a;
-    border-radius: 10px; padding: 16px 20px; text-align: right;
-    backdrop-filter: blur(8px);
+    border-radius: 8px; padding: 10px 16px; font-size: 12px;
+    color: #5a6a8a; backdrop-filter: blur(8px);
   }
-  .title-block h1 { color: #a8c8ff; font-size: 18px; }
-  .title-block p { color: #7a8aaa; font-size: 12px; margin-top: 4px; }
+  .bottombar a { color: #4fc3f7; text-decoration: none; }
+  .bottombar a:hover { text-decoration: underline; }
 
-  .info-bar {
-    position: fixed; top: 20px; right: 20px; z-index: 10;
-    background: rgba(10,10,30,0.85); border: 1px solid #2a2a5a;
-    border-radius: 10px; padding: 12px 16px; font-size: 12px;
-    color: #7a8aaa; backdrop-filter: blur(8px);
-  }
-  .info-bar span { color: #a8c8ff; }
-
+  /* ── Node label ── */
   .node-label {
-    font-size: 11px; fill: #c0c8e0; pointer-events: none;
+    font-size: 10px; fill: #b0c0d8; pointer-events: none;
     text-anchor: middle; dominant-baseline: middle;
   }
-  .cluster-label {
-    font-size: 13px; fill: rgba(168,200,255,0.5);
-    letter-spacing: 2px; text-transform: uppercase;
+
+  /* ── Hint ── */
+  .hint {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+    z-index: 10; color: #3a4a6a; font-size: 12px;
     pointer-events: none;
   }
 </style>
 </head>
 <body>
 
-<div class="legend">
-  <h3>节点类型</h3>
-  <div class="legend-item"><div class="legend-dot" style="background:#4fc3f7;box-shadow:0 0 6px #4fc3f7"></div>核心论文 (Paper 1-3)</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#81c784;box-shadow:0 0 6px #81c784"></div>支撑工作 (引用)</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#ff8a65;box-shadow:0 0 6px #ff8a65"></div>竞争路径</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#ce93d8;box-shadow:0 0 6px #ce93d8"></div>形式化证明 (Lean4)</div>
-  <div class="legend-item"><div class="legend-dot" style="background:#ffca28;box-shadow:0 0 6px #ffca28"></div>实验验证 (Toy)</div>
-  <div class="legend-item"><div class="legend-line" style="background:#3a5fff"></div>理论支撑</div>
-  <div class="legend-item"><div class="legend-line" style="background:#00bcd4;opacity:0.6"></div>验证关系</div>
-  <div class="legend-item"><div class="legend-line" style="background:#ff5252;opacity:0.5"></div>竞争关系</div>
+<!-- ── Top bar ── -->
+<div class="topbar">
+  <div class="topbar-title">
+    ASI Research Map <span>/ Thermodynamic AGI</span>
+  </div>
+  <div>
+    <button class="lang-btn active" id="btn-en">EN</button>
+    <button class="lang-btn" id="btn-zh">中文</button>
+  </div>
 </div>
 
+<!-- ── Legend ── -->
+<div class="legend" id="legend">
+  <h3 id="legend-title">Node Types</h3>
+  <div class="legend-item"><div class="legend-dot" style="background:#4fc3f7;box-shadow:0 0 5px #4fc3f7"></div><span data-i18n="l_core">Core Papers (P1–P3)</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#81c784;box-shadow:0 0 5px #81c784"></div><span data-i18n="l_support">Supporting Work (引用)</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ce93d8;box-shadow:0 0 5px #ce93d8"></div><span data-i18n="l_lean">Formal Proof (Lean4)</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ffca28;box-shadow:0 0 5px #ffca28"></div><span data-i18n="l_toy">Toy Experiment</span></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ff8a65;box-shadow:0 0 5px #ff8a65"></div><span data-i18n="l_rival">Competing Path</span></div>
+  <div style="margin-top:8px; border-top:1px solid #2a2a5a; padding-top:8px;">
+  <div class="legend-item"><div class="legend-line" style="background:#3a5fff"></div><span data-i18n="l_theory">Theoretical</span></div>
+  <div class="legend-item"><div class="legend-line" style="background:#00bcd4;opacity:0.7"></div><span data-i18n="l_valid">Validation</span></div>
+  <div class="legend-item"><div class="legend-line" style="background:#ff5252;opacity:0.5"></div><span data-i18n="l_rival_e">Rival / Gap</span></div>
+  </div>
+</div>
+
+<!-- ── Tooltip ── -->
 <div class="tooltip" id="tooltip"></div>
 
-<div class="info-bar">
-  节点: <span id="node-count">0</span> &nbsp;|&nbsp; 连边: <span id="edge-count">0</span>
-  &nbsp;|&nbsp; 拖拽节点 &nbsp;|&nbsp; 滚轮缩放
+<!-- ── Bottom bar ── -->
+<div class="bottombar">
+  <span id="stats">nodes: <span id="node-count">0</span> · edges: <span id="edge-count">0</span></span>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/simulai/ASI" target="_blank">GitHub</a> ·
+  <a href="https://github.com/simulai/FECG_LEAN" target="_blank">FECG_LEAN</a>
 </div>
 
-<div class="title-block">
-  <h1>ASI 科研地图</h1>
-  <p>热力学解析智能 · Thermodynamic AGI</p>
-  <p style="margin-top:6px;color:#4fc3f7">github.com/simulai/ASI</p>
-</div>
+<div class="hint" id="hint">drag nodes · scroll to zoom · hover for details</div>
 
 <script>
-// ── 数据 ──────────────────────────────────────────────────────────────────────
+// ── D3 CDN check ──
+if (typeof d3 === 'undefined') {
+  document.body.innerHTML = '<div style="color:#ff8a65;padding:40px;font-size:16px;">D3.js failed to load. Please check your network connection.<br><br><a href="research_map.html" style="color:#4fc3f7">Try refreshing the page</a>.</div>';
+  throw new Error('D3 not loaded');
+}
 
-const nodes = [
-  // 核心层
-  { id: "p1", label: "Paper 1\n互补配对", type: "core",
-    detail: "<h4>Paper 1: Complementary Pairing</h4><p>Helix = DNA硬归纳偏置，特征交互AUC 0.716 vs 0.632，54%更少参数。已在KDD Cup TAAC验证。<br><a href='https://github.com/simulai/ASI/tree/main/04_papers/paper1_complementary_pairing' target='_blank' style='color:#4fc3f7'>📄 详情</a></p><span class='tag'>✅ 完成</span><span class='tag'>待投 ACL</span>",
-    x: 420, y: 310 },
-  { id: "p2", label: "Paper 2\n热力学基础", type: "core",
-    detail: "<h4>Paper 2: Thermodynamic Foundations</h4><p>F = Helmholtz自由能，Landauer耗散，NCA外部验证。吸引子=不动点，Attention=连续近似。<br><a href='https://github.com/simulai/ASI/tree/main/02_theory/en' target='_blank' style='color:#4fc3f7'>📄 详情</a></p><span class='tag'>🔄 进行中</span>",
-    x: 560, y: 310 },
-  { id: "p3", label: "Paper 3\n组件库", type: "core",
-    detail: "<h4>Paper 3: Component Library</h4><p>Landauer门 + Hopfield + 互补门 + 路由。模块化热力学实现。<br><a href='https://github.com/simulai/ASI/blob/main/02_theory/en/landauer_en.md' target='_blank' style='color:#4fc3f7'>📄 详情</a></p><span class='tag'>💡 概念</span>",
-    x: 700, y: 310 },
-
-  // 理论支撑层
-  { id: "fep", label: "自由能原理\nFEP", type: "support",
-    detail: "<h4>Free Energy Principle (FEP)</h4><p>Karl Friston 2010: 脑是自由能最小化系统。大脑通过主动推理减少自由能来维持内部稳态。</p><span class='tag'>理论根源</span>",
-    x: 280, y: 180 },
-  { id: "ebaselaw", label: "e-base\nScaling Law", type: "support",
-    detail: "<h4>E-Base Scaling Law (Mathematical-Principles 2025)</h4><p>信息传递效率最优分支因子 = e ≈ 2.718。在Lean4中形式化证明。<br>这是scaling law的热力学版本：Landauer约束下的最优计算结构。<br><a href='https://github.com/simulai/Mathematical-Principles-of-Intelligence' target='_blank' style='color:#81c784'>📄 前身仓库</a></p><span class='tag'>Scaling理论</span><span class='tag'>前身</span>",
-    x: 160, y: 140 },
-  { id: "holonomy", label: "认知和乐\nℋ (Holonomy)", type: "support",
-    detail: "<h4>Cognitive Holonomy ℋ (Mathematical-Principles 2025)</h4><p>认知状态空间中的守恒拓扑荷，约束熵产生。公式 TΔS + ΔE + μΔℋ ≥ 0。<br>与吸引子拓扑同构：ℋ守恒 = 自由能landscape的拓扑不变量。<br><a href='https://github.com/simulai/Mathematical-Principles-of-Intelligence' target='_blank' style='color:#81c784'>📄 前身仓库</a></p><span class='tag'>拓扑物理</span><span class='tag'>前身</span>",
-    x: 160, y: 220 },
-  { id: "landauer", label: "Landauer\n耗散原理", type: "support",
-    detail: "<h4>Landauer's Principle (1961)</h4><p>每擦除1bit信息 = 必须耗散 kT·ln2 能量。计算有物理代价，这给了智能一个热力学约束。</p><span class='tag'>核心原理</span>",
-    x: 280, y: 260 },
-  { id: "hopfield", label: "Hopfield\n网络", type: "support",
-    detail: "<h4>Hopfield Networks (1982)</h4><p>能量函数 E = -½Σwᵢⱼsᵢsⱼ。吸引子 = 能量局部最小点。我们用Attention近似。</p><span class='tag'>经典基础</span>",
-    x: 280, y: 340 },
-  { id: "nca", label: "NCA\n计算结构迁移", type: "support",
-    detail: "<h4>MIT CSAIL 2026 (arXiv:2603.10055)</h4><p>神经细胞自动机数据训练LMs: 164M token > 1.6B英语token。注意力层迁移效果最好。外部独立验证！<br><a href='https://arxiv.org/abs/2603.10055' target='_blank' style='color:#81c784'>📄 arXiv</a></p><span class='tag'>外部验证</span>",
-    x: 420, y: 180 },
-  { id: "fecg", label: "FECG_LEAN\n形式化证明", type: "lean",
-    detail: "<h4>Lean4 形式化证明 (FECG_LEAN)</h4><p>energy_convergent / fixed_point_of_limit / async收敛性 — 数学上锁死热力学框架！<br><a href='https://github.com/simulai/FECG_LEAN' target='_blank' style='color:#ce93d8'>🔗 GitHub/FECG_LEAN</a></p><span class='tag'>形式化证明</span><span class='tag'>Mathlib</span>",
-    x: 560, y: 180 },
-
-  // 实验验证
-  { id: "h1", label: "H1\n自由能二阶导", type: "toy",
-    detail: "<h4>H1: Free Energy 2nd Derivative</h4><p>错误注入d²F时预测误差↑。ratio=1.217，INCONCLUSIVE，需更多episodes。</p><span class='tag'>Toy验证</span>",
-    x: 420, y: 420 },
-  { id: "h2", label: "H2\n吸引子收敛", type: "toy",
-    detail: "<h4>H2: Attractor Convergence</h4><p>初始F越低→收敛步数越少。在TinyGridEnv上验证。</p><span class='tag'>Toy验证</span>",
-    x: 490, y: 450 },
-  { id: "h3", label: "H3\nMetaGate曲率", type: "toy",
-    detail: "<h4>H3: MetaGate Curvature Trigger</h4><p>曲率越大→MetaGate自省触发。TinyGridEnv验证。<br><a href='https://github.com/simulai/ASI/blob/main/02_theory/en/h1_h5_en.md' target='_blank' style='color:#4fc3f7'>📄 详情</a></p><span class='tag'>Toy验证</span><span class='tag'>H3</span>",
-    x: 560, y: 420 },
-
-  // 竞争层
-  { id: "dreamer", label: "DreamerV3\n世界模型", type: "rival",
-    detail: "<h4>DeepMind DreamerV3</h4><p>世界模型+强化学习。无热力学框架，无物理论证。与我们是不同路径。</p><span class='tag'>竞争</span>",
-    x: 820, y: 200 },
-  { id: "voyager", label: "Voyager\n自主探索", type: "rival",
-    detail: "<h4>Voyager / AutoGPT</h4><p>L3规划智能体。无限循环问题，无资源感知。与我们有相同目标不同方法。</p><span class='tag'>竞争</span>",
-    x: 820, y: 280 },
-  { id: "moe", label: "MoE\n混合专家", type: "rival",
-    detail: "<h4>MoE Scaling (Jelassi 2025)</h4><p>MLP扩张增强记忆→推理能力不提升。我们用Landauer门增强推理。</p><span class='tag'>竞争</span>",
-    x: 820, y: 360 },
-
-  // 外部引用
-  { id: "vaebp", label: "VAE\n变分自编码", type: "support",
-    detail: "<h4>VAE (Kingma & Welling 2014)</h4><p>变分推断=变分自由能最小化。近似推理=能量近似。与FEP数学同构。</p>",
-    x: 160, y: 180 },
-  { id: "platonic", label: "柏拉图表征\n假说", type: "support",
-    detail: "<h4>Platonic Representation Hypothesis (Isola 2024)</h4><p>不同模态/架构的AI模型内部表征随规模增大趋同。支持跨领域迁移。</p>",
-    x: 160, y: 260 },
-  { id: "swebench", label: "SWE-bench\nDevin", type: "support",
-    detail: "<h4>SWE-bench / Devin</h4><p>Devin 13.86% vs GPT-4 3.97%。收益来自智能体架构，不是scale。→ L3瓶颈=架构设计。</p>",
-    x: 700, y: 430 },
-];
-
-const links = [
-  // 核心→核心
-  { s: "p1", t: "p2", label: "理论基础", type: "theoretical" },
-  { s: "p2", t: "p3", label: "扩展设计", type: "theoretical" },
-  { s: "p1", t: "p3", label: "组件组合", type: "theoretical" },
-
-  // 支撑→核心
-  { s: "fep", t: "p2", label: "核心原理", type: "theoretical" },
-  { s: "landauer", t: "p2", label: "核心原理", type: "theoretical" },
-  { s: "landauer", t: "p3", label: "门控设计", type: "theoretical" },
-  { s: "hopfield", t: "p2", label: "能量函数", type: "theoretical" },
-  { s: "nca", t: "p2", label: "外部验证", type: "validation" },
-  { s: "fecg", t: "p2", label: "形式化证明", type: "validation" },
-
-  // Mathematical-Principles → ASI 演化关系
-  { s: "ebaselaw", t: "landauer", label: "统一视角", type: "theoretical" },
-  { s: "ebaselaw", t: "fep", label: "热力学根基", type: "theoretical" },
-  { s: "holonomy", t: "fep", label: "拓扑扩展", type: "theoretical" },
-  { s: "holonomy", t: "hopfield", label: "拓扑不变", type: "theoretical" },
-
-  // 实验→核心
-  { s: "h1", t: "p2", label: "H1验证", type: "validation" },
-  { s: "h2", t: "p2", label: "H2验证", type: "validation" },
-  { s: "h3", t: "p2", label: "H3验证", type: "validation" },
-
-  // 竞争
-  { s: "dreamer", t: "p2", label: "不同路径", type: "rival" },
-  { s: "voyager", t: "p2", label: "不同路径", type: "rival" },
-  { s: "moe", t: "p2", label: "不同路径", type: "rival" },
-
-  // 引用关联
-  { s: "fep", t: "landauer", label: "交叉", type: "theoretical" },
-  { s: "fep", t: "vaebp", label: "同构", type: "theoretical" },
-  { s: "fep", t: "nca", label: "支撑", type: "validation" },
-  { s: "platonic", t: "nca", label: "交叉验证", type: "validation" },
-  { s: "fecg", t: "landauer", label: "同构", type: "theoretical" },
-  { s: "hopfield", t: "fecg", label: "形式化", type: "validation" },
-  { s: "swebench", t: "voyager", label: "数据", type: "validation" },
-];
-
-const typeColor = {
-  core: "#4fc3f7", support: "#81c784", rival: "#ff8a65",
-  lean: "#ce93d8", toy: "#ffca28"
-};
-const linkColor = {
-  theoretical: "#3a5fff", validation: "#00bcd4", rival: "#ff5252"
+// ── Language strings ──
+const i18n = {
+  en: {
+    legendTitle: 'Node Types',
+    l_core: 'Core Papers (P1–P3)',
+    l_support: 'Supporting Work',
+    l_lean: 'Formal Proof (Lean4)',
+    l_toy: 'Toy Experiment',
+    l_rival: 'Competing Path',
+    l_theory: 'Theoretical',
+    l_valid: 'Validation',
+    l_rival_e: 'Rival / Gap',
+    hint: 'drag nodes · scroll to zoom · hover for details',
+    stats: 'nodes',
+    edges: 'edges',
+    link_detail: 'Details',
+    link_arxiv: 'arXiv',
+    link_github: 'GitHub',
+    tag_done: '✅ Done',
+    tag_progress: '🔄 In Progress',
+    tag_concept: '💡 Concept',
+    tag_toy: 'Toy',
+    tag_theory: 'Theory',
+    tag_formal: 'Formal',
+    tag_external: 'External',
+  },
+  zh: {
+    legendTitle: '节点类型',
+    l_core: '核心论文 (P1–P3)',
+    l_support: '支撑工作',
+    l_lean: '形式化证明 (Lean4)',
+    l_toy: 'Toy实验验证',
+    l_rival: '竞争路径',
+    l_theory: '理论支撑',
+    l_valid: '验证关系',
+    l_rival_e: '竞争/缺口',
+    hint: '拖拽节点 · 滚轮缩放 · 悬停查看详情',
+    stats: '节点',
+    edges: '连边',
+    link_detail: '详情',
+    link_arxiv: 'arXiv',
+    link_github: 'GitHub',
+    tag_done: '✅ 完成',
+    tag_progress: '🔄 进行中',
+    tag_concept: '💡 概念',
+    tag_toy: 'Toy验证',
+    tag_theory: '理论',
+    tag_formal: '形式化',
+    tag_external: '外部验证',
+  }
 };
 
-// ── 可视化 ────────────────────────────────────────────────────────────────────
+let lang = 'en';
 
-const svg = d3.select("body").append("svg");
-const g = svg.append("g");
+function t(key) { return i18n[lang][key] || key; }
 
-svg.append("defs").append("marker")
-  .attr("id", "arrowhead").attr("markerWidth", 8).attr("markerHeight", 6)
-  .attr("refX", 20).attr("refY", 3).attr("orient", "auto")
-  .append("polygon")
-  .attr("points", "0 0, 8 3, 0 6")
-  .attr("fill", "rgba(100,120,180,0.5)");
+function tag(label) {
+  return `<span class="tag">${label}</span>`;
+}
 
-const zoom = d3.zoom().scaleExtent([0.3, 3])
-  .on("zoom", e => g.attr("transform", e.transform));
+// ── Node data (EN labels) ──
+const nodesRaw = [
+  // Core papers
+  { id:"p1", label_en:"Paper 1\nComplement.", label_zh:"Paper 1\n互补配对", type:"core", gx:420, gy:310,
+    status:"done",
+    en:`<h4>Paper 1: Complementary Pairing</h4>
+<p>Helix = DNA hard inductive bias for feature interaction.<br>AUC 0.716 vs 0.632, 54% fewer params.<br>Validated on KDD Cup TAAC.</p>
+${tag('✅ Done')} ${tag('待投 ACL')}
+<a class="link-btn" href="https://github.com/simulai/ASI/tree/main/04_papers/paper1_complementary_pairing" target="_blank">📄 Details</a>`,
+    zh:`<h4>Paper 1: 互补配对</h4>
+<p>Helix = DNA硬归纳偏置，特征交互任务。<br>AUC 0.716 vs 0.632，54%更少参数。<br>已在KDD Cup TAAC验证。</p>
+${tag('✅ 完成')} ${tag('待投 ACL')}
+<a class="link-btn" href="https://github.com/simulai/ASI/tree/main/04_papers/paper1_complementary_pairing" target="_blank">📄 详情</a>` },
+  { id:"p2", label_en:"Paper 2\nThermo Found.", label_zh:"Paper 2\n热力学基础", type:"core", gx:560, gy:310,
+    status:"progress",
+    en:`<h4>Paper 2: Thermodynamic Foundations</h4>
+<p>F = Helmholtz free energy. Landauer dissipation.<br>Attractor = fixed point. Attention ≈ continuous FEP.<br>MIT NCA as external validation.</p>
+${tag('🔄 In Progress')}
+<a class="link-btn" href="https://github.com/simulai/ASI/tree/main/02_theory/en" target="_blank">📄 Details</a>`,
+    zh:`<h4>Paper 2: 热力学基础</h4>
+<p>F = Helmholtz自由能。Landauer耗散。<br>吸引子 = 不动点。Attention ≈ 连续FEP。<br>MIT NCA作为外部验证。</p>
+${tag('🔄 进行中')}
+<a class="link-btn" href="https://github.com/simulai/ASI/tree/main/02_theory/en" target="_blank">📄 详情</a>` },
+  { id:"p3", label_en:"Paper 3\nComponent Lib.", label_zh:"Paper 3\n组件库", type:"core", gx:700, gy:310,
+    status:"concept",
+    en:`<h4>Paper 3: Component Library</h4>
+<p>Landauer Gate + Hopfield + Complementary Gate + Routing.<br>Modular thermodynamic AI architecture.</p>
+${tag('💡 Concept')}
+<a class="link-btn" href="https://github.com/simulai/ASI/blob/main/02_theory/en/landauer_en.md" target="_blank">📄 Details</a>`,
+    zh:`<h4>Paper 3: 组件库</h4>
+<p>Landauer门 + Hopfield + 互补门 + 路由。<br>模块化热力学AI架构。</p>
+${tag('💡 概念')}
+<a class="link-btn" href="https://github.com/simulai/ASI/blob/main/02_theory/en/landauer_en.md" target="_blank">📄 详情</a>` },
+
+  // Theory support layer
+  { id:"fep", label_en:"Free Energy\nPrinciple (FEP)", label_zh:"自由能原理\nFEP", type:"support", gx:280, gy:180,
+    en:`<h4>Free Energy Principle — Karl Friston 2010</h4>
+<p>The brain minimizes free energy to maintain internal homeostasis.<br>Active inference = minimizing surprise.<br>Our core theoretical anchor.</p>
+${tag('Theory Root')}`,
+    zh:`<h4>自由能原理 — Karl Friston 2010</h4>
+<p>大脑通过主动推理减少自由能来维持内部稳态。<br>我们的核心理论锚点。</p>
+${tag('理论根源')}` },
+  { id:"ebaselaw", label_en:"e-base\nScaling Law", label_zh:"e进制\nScaling定律", type:"support", gx:150, gy:120,
+    en:`<h4>E-Base Scaling Law (Mathematical-Principles 2025)</h4>
+<p>Optimal branching factor = e ≈ 2.718.<br>Thermodynamic version of scaling law:<br>optimal computation under Landauer constraint.<br>
+<a class="link-btn" href="https://github.com/simulai/Mathematical-Principles-of-Intelligence" target="_blank">📄 Predecessor repo</a></p>
+${tag('Scaling')} ${tag('Predecessor')}`,
+    zh:`<h4>e进制Scaling定律 (Mathematical-Principles 2025)</h4>
+<p>最优分支因子 = e ≈ 2.718。<br>scaling law的热力学版本：Landauer约束下的最优计算。<br>
+<a class="link-btn" href="https://github.com/simulai/Mathematical-Principles-of-Intelligence" target="_blank">📄 前身仓库</a></p>
+${tag('Scaling')} ${tag('前身')}` },
+  { id:"holonomy", label_en:"Cognitive\nHolonomy ℋ", label_zh:"认知和乐\nℋ", type:"support", gx:150, gy:200,
+    en:`<h4>Cognitive Holonomy ℋ (Mathematical-Principles 2025)</h4>
+<p>Conserved topological charge in cognitive state space.<br>Inequality: TΔS + ΔE + μΔℋ ≥ 0.<br>Isomorphic to attractor basin topology.<br>
+<a class="link-btn" href="https://github.com/simulai/Mathematical-Principles-of-Intelligence" target="_blank">📄 Predecessor repo</a></p>
+${tag('Topology')} ${tag('Predecessor')}`,
+    zh:`<h4>认知和乐 ℋ (Mathematical-Principles 2025)</h4>
+<p>认知状态空间中的守恒拓扑荷。<br>不等式：TΔS + ΔE + μΔℋ ≥ 0。<br>与吸引子basin拓扑同构。<br>
+<a class="link-btn" href="https://github.com/simulai/Mathematical-Principles-of-Intelligence" target="_blank">📄 前身仓库</a></p>
+${tag('拓扑物理')} ${tag('前身')}` },
+  { id:"landauer", label_en:"Landauer\nDissipation", label_zh:"Landauer\n耗散原理", type:"support", gx:280, gy:260,
+    en:`<h4>Landauer's Principle (1961)</h4>
+<p>Each bit erased = must dissipate kT·ln2 energy.<br>Computation has a physical cost — the thermodynamic foundation of intelligence.</p>
+${tag('Core Principle')}`,
+    zh:`<h4>Landauer原理 (1961)</h4>
+<p>每擦除1bit = 必须耗散 kT·ln2 能量。<br>计算有物理代价 — 智能的热力学基础。</p>
+${tag('核心原理')}` },
+  { id:"hopfield", label_en:"Hopfield\nNetworks", label_zh:"Hopfield\n网络", type:"support", gx:280, gy:340,
+    en:`<h4>Hopfield Networks (1982)</h4>
+<p>Energy function E = -½Σwᵢⱼsᵢsⱼ.<br>Attractor = local energy minimum.<br>We approximate with Attention.</p>
+${tag('Classical')}`,
+    zh:`<h4>Hopfield网络 (1982)</h4>
+<p>能量函数 E = -½Σwᵢⱼsᵢsⱼ。<br>吸引子 = 能量局部最小点。<br>我们用Attention近似。</p>
+${tag('经典基础')}` },
+  { id:"nca", label_en:"NCA\nPre-Pretrain", label_zh:"NCA\n计算结构迁移", type:"support", gx:430, gy:180,
+    en:`<h4>MIT CSAIL — arXiv:2603.10055 (March 2026)</h4>
+<p>164M cellular automata tokens > 1.6B English tokens.<br>Attention layers transfer best — independent validation!<br>
+<a class="link-btn" href="https://arxiv.org/abs/2603.10055" target="_blank">📄 arXiv paper</a></p>
+${tag('External Validation')}`,
+    zh:`<h4>MIT CSAIL — arXiv:2603.10055 (2026年3月)</h4>
+<p>164M细胞自动机token > 1.6B英语token。<br>注意力层迁移效果最好 — 独立外部验证！<br>
+<a class="link-btn" href="https://arxiv.org/abs/2603.10055" target="_blank">📄 arXiv原文</a></p>
+${tag('外部验证')}` },
+  { id:"fecg", label_en:"FECG_LEAN\nLean4 Proofs", label_zh:"FECG_LEAN\n形式化证明", type:"lean", gx:560, gy:180,
+    en:`<h4>Lean4 Formalization — FECG_LEAN</h4>
+<p>energy_convergent / fixed_point_of_limit / async convergence.<br>Mathematically locks the thermodynamic framework!<br>
+<a class="link-btn" href="https://github.com/simulai/FECG_LEAN" target="_blank">🔗 GitHub/FECG_LEAN</a></p>
+${tag('Formal Proof')} ${tag('Mathlib')}`,
+    zh:`<h4>Lean4形式化 — FECG_LEAN</h4>
+<p>energy_convergent / fixed_point_of_limit / async收敛性。<br>数学上锁死热力学框架！<br>
+<a class="link-btn" href="https://github.com/simulai/FECG_LEAN" target="_blank">🔗 GitHub/FECG_LEAN</a></p>
+${tag('形式化证明')} ${tag('Mathlib')}` },
+  { id:"vaebp", label_en:"VAE\nVariational", label_zh:"VAE\n变分自编码", type:"support", gx:150, gy:290,
+    en:`<h4>VAE — Kingma & Welling 2014</h4>
+<p>Variational inference = variational free-energy minimization.<br>Isomorphic to FEP: approximate inference ≈ energy approximation.</p>
+${tag('Related')}`,
+    zh:`<h4>VAE — Kingma & Welling 2014</h4>
+<p>变分推断 = 变分自由能最小化。<br>与FEP数学同构。</p>
+${tag('相关')}` },
+  { id:"platonic", label_en:"Platonic Rep.\nHypothesis", label_zh:"柏拉图表征\n假说", type:"support", gx:150, gy:370,
+    en:`<h4>Platonic Representation Hypothesis — Isola 2024</h4>
+<p>AI model representations converge across modalities & architectures as scale grows.<br>Supports cross-domain transfer — our NCA connection.</p>
+${tag('Cross-modal')}`,
+    zh:`<h4>柏拉图表征假说 — Isola 2024</h4>
+<p>不同模态/架构的AI模型表征随规模增大趋同。<br>支持跨领域迁移 — 与NCA的联系。</p>
+${tag('跨模态')}` },
+
+  // Toy experiments
+  { id:"h1", label_en:"H1\nFree Energy d²F", label_zh:"H1\n自由能二阶导", type:"toy", gx:420, gy:420,
+    en:`<h4>H1: Free Energy 2nd Derivative Prediction</h4>
+<p>Error injection in d²F → prediction error ↑.<br>ratio=1.217, INCONCLUSIVE — needs more episodes.<br>
+<a class="link-btn" href="https://github.com/simulai/ASI/blob/main/02_theory/en/h1_h5_en.md" target="_blank">📄 Details</a></p>
+${tag('Toy Verified')}`,
+    zh:`<h4>H1: 自由能二阶导预测错误</h4>
+<p>错误注入d²F → 预测误差↑。<br>ratio=1.217，INCONCLUSIVE，需更多episodes。<br>
+<a class="link-btn" href="https://github.com/simulai/ASI/blob/main/02_theory/en/h1_h5_en.md" target="_blank">📄 详情</a></p>
+${tag('Toy验证')}` },
+  { id:"h2", label_en:"H2\nAttractor Conv.", label_zh:"H2\n吸引子收敛", type:"toy", gx:490, gy:460,
+    en:`<h4>H2: Attractor Convergence Speed</h4>
+<p>Lower initial F → fewer steps to converge.<br>Validated on TinyGridEnv.</p>
+${tag('Toy Verified')}`,
+    zh:`<h4>H2: 吸引子收敛速度</h4>
+<p>初始F越低 → 收敛步数越少。<br>TinyGridEnv验证。</p>
+${tag('Toy验证')}` },
+  { id:"h3", label_en:"H3\nMetaGate", label_zh:"H3\nMetaGate曲率", type:"toy", gx:560, gy:430,
+    en:`<h4>H3: MetaGate Curvature Trigger</h4>
+<p>High curvature → triggers metacognitive introspection.<br>TinyGridEnv validated.<br>
+<a class="link-btn" href="https://github.com/simulai/ASI/blob/main/02_theory/en/h1_h5_en.md" target="_blank">📄 Details</a></p>
+${tag('Toy Verified')}`,
+    zh:`<h4>H3: MetaGate曲率触发</h4>
+<p>高曲率 → 触发元认知自省。<br>TinyGridEnv验证。<br>
+<a class="link-btn" href="https://github.com/simulai/ASI/blob/main/02_theory/en/h1_h5_en.md" target="_blank">📄 详情</a></p>
+${tag('Toy验证')}` },
+
+  // Competitors
+  { id:"dreamer", label_en:"DreamerV3\nWorld Model", label_zh:"DreamerV3\n世界模型", type:"rival", gx:820, gy:200,
+    en:`<h4>DeepMind DreamerV3</h4>
+<p>World model + reinforcement learning.<br>No thermodynamic framing, no physical grounding.<br>Different path from us.</p>
+${tag('Competitor')}`,
+    zh:`<h4>DeepMind DreamerV3</h4>
+<p>世界模型 + 强化学习。<br>无热力学框架，无物理论证。<br>与我们是不同路径。</p>
+${tag('竞争')}` },
+  { id:"voyager", label_en:"Voyager\nAutoGPT", label_zh:"Voyager\nAutoGPT", type:"rival", gx:820, gy:290,
+    en:`<h4>Voyager / AutoGPT</h4>
+<p>L3 planning agents. Infinite loop problem.<br>No resource awareness.<br>Same goal, different method.</p>
+${tag('Competitor')}`,
+    zh:`<h4>Voyager / AutoGPT</h4>
+<p>L3规划智能体。无限循环问题。<br>无资源感知。与我们有相同目标不同方法。</p>
+${tag('竞争')}` },
+  { id:"moe", label_en:"MoE\nMixed Experts", label_zh:"MoE\n混合专家", type:"rival", gx:820, gy:380,
+    en:`<h4>MoE Scaling — Jelassi 2025</h4>
+<p>MLP expansion → memory, NOT reasoning.<br>We use Landauer gate → reasoning.</p>
+${tag('Competitor')}`,
+    zh:`<h4>MoE Scaling — Jelassi 2025</h4>
+<p>MLP扩张 → 记忆，不提升推理。<br>我们用Landauer门 → 增强推理。</p>
+${tag('竞争')}` },
+
+  // External benchmarks
+  { id:"swebench", label_en:"SWE-bench\nDevin", label_zh:"SWE-bench\nDevin", type:"support", gx:700, gy:440,
+    en:`<h4>SWE-bench / Devin (2024)</h4>
+<p>Devin 13.86% vs GPT-4 3.97%.<br>Gain from agentic architecture, not scale.<br>→ L3 bottleneck = architectural design.</p>
+${tag('Benchmark')}`,
+    zh:`<h4>SWE-bench / Devin (2024)</h4>
+<p>Devin 13.86% vs GPT-4 3.97%。<br>收益来自智能体架构，不是scale。<br>→ L3瓶颈 = 架构设计。</p>
+${tag('Benchmark')}` },
+];
+
+const linksRaw = [
+  { s:"p1", t:"p2", label:"theory", type:"theoretical" },
+  { s:"p2", t:"p3", label:"extends", type:"theoretical" },
+  { s:"p1", t:"p3", label:"components", type:"theoretical" },
+  { s:"fep", t:"p2", label:"core principle", type:"theoretical" },
+  { s:"landauer", t:"p2", label:"core principle", type:"theoretical" },
+  { s:"landauer", t:"p3", label:"gate design", type:"theoretical" },
+  { s:"hopfield", t:"p2", label:"energy fn", type:"theoretical" },
+  { s:"nca", t:"p2", label:"external val", type:"validation" },
+  { s:"fecg", t:"p2", label:"formal proof", type:"validation" },
+  { s:"h1", t:"p2", label:"H1 val", type:"validation" },
+  { s:"h2", t:"p2", label:"H2 val", type:"validation" },
+  { s:"h3", t:"p2", label:"H3 val", type:"validation" },
+  { s:"ebaselaw", t:"landauer", label:"unified view", type:"theoretical" },
+  { s:"ebaselaw", t:"fep", label:"thermo root", type:"theoretical" },
+  { s:"holonomy", t:"fep", label:"topo extension", type:"theoretical" },
+  { s:"holonomy", t:"hopfield", label:"topo invariant", type:"theoretical" },
+  { s:"dreamer", t:"p2", label:"different path", type:"rival" },
+  { s:"voyager", t:"p2", label:"different path", type:"rival" },
+  { s:"moe", t:"p2", label:"different path", type:"rival" },
+  { s:"fep", t:"landauer", label:"intersection", type:"theoretical" },
+  { s:"fep", t:"vaebp", label:"isomorphic", type:"theoretical" },
+  { s:"fep", t:"nca", label:"supports", type:"validation" },
+  { s:"platonic", t:"nca", label:"cross-val", type:"validation" },
+  { s:"fecg", t:"landauer", label:"isomorphic", type:"theoretical" },
+  { s:"hopfield", t:"fecg", label:"formalizes", type:"validation" },
+  { s:"swebench", t:"voyager", label:"data", type:"validation" },
+];
+
+const typeColor = { core:"#4fc3f7", support:"#81c784", lean:"#ce93d8", toy:"#ffca28", rival:"#ff8a65" };
+const linkColor = { theoretical:"#3a5fff", validation:"#00bcd4", rival:"#ff5252" };
+
+// ── Build nodes with current language ──
+function buildNodes() {
+  return nodesRaw.map(n => ({
+    ...n,
+    label: lang === 'en' ? n.label_en : n.label_zh,
+    detail: lang === 'en' ? n.en : n.zh,
+  }));
+}
+
+// ── Build links ──
+const links = linksRaw;
+
+// ── SVG setup ──
+const svg = d3.select('body').append('svg').attr('width', window.innerWidth).attr('height', window.innerHeight);
+const g = svg.append('g');
+
+// Arrow marker
+svg.append('defs').append('marker')
+  .attr('id', 'arrowhead')
+  .attr('markerWidth', 8).attr('markerHeight', 6)
+  .attr('refX', 22).attr('refY', 3).attr('orient', 'auto')
+  .append('polygon')
+  .attr('points', '0 0, 8 3, 0 6')
+  .attr('fill', 'rgba(100,120,180,0.45)');
+
+// Zoom
+const zoom = d3.zoom().scaleExtent([0.25, 3]).on('zoom', e => g.attr('transform', e.transform));
 svg.call(zoom);
 
-// 力导向
-const simulation = d3.forceSimulation(nodes)
-  .force("link", d3.forceLink(links).id(d => d.id).distance(120).strength(0.4))
-  .force("charge", d3.forceManyBody().strength(-400))
-  .force("center", d3.forceCenter(window.innerWidth/2, window.innerHeight/2))
-  .force("collision", d3.forceCollide(45))
-  .alpha(0.3).restart();
+// ── Simulation ──
+let simNodes = buildNodes();
 
-// 连边
-const link = g.append("g").attr("class", "links")
-  .selectAll("line").data(links).join("line")
-  .attr("stroke", d => linkColor[d.type] || "#333")
-  .attr("stroke-opacity", d => d.type === "rival" ? 0.4 : 0.6)
-  .attr("stroke-width", d => d.type === "rival" ? 1 : 1.5)
-  .attr("marker-end", "url(#arrowhead)");
+const simulation = d3.forceSimulation(simNodes)
+  .force('link', d3.forceLink(links).id(d => d.id).distance(130).strength(0.35))
+  .force('charge', d3.forceManyBody().strength(-380))
+  .force('center', d3.forceCenter(window.innerWidth/2, window.innerHeight/2))
+  .force('collision', d3.forceCollide(42))
+  .alpha(0.5).restart();
 
-// 节点
-const node = g.append("g").attr("class", "nodes")
-  .selectAll("g").data(nodes).join("g")
-  .attr("class", "node")
+// ── Links ──
+let link = g.append('g').selectAll('line').data(links).join('line')
+  .attr('stroke', d => linkColor[d.type] || '#333')
+  .attr('stroke-opacity', d => d.type === 'rival' ? 0.35 : 0.55)
+  .attr('stroke-width', d => d.type === 'rival' ? 1 : 1.5)
+  .attr('marker-end', 'url(#arrowhead)');
+
+// ── Nodes ──
+let node = g.append('g').selectAll('g').data(simNodes).join('g')
+  .attr('class', 'node')
   .call(d3.drag()
-    .on("start", (e, d) => { if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
-    .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y; })
-    .on("end", (e, d) => { if (!e.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; }));
+    .on('start', (e, d) => { if (!e.active) simulation.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+    .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
+    .on('end', (e, d) => { if (!e.active) simulation.alphaTarget(0); d.fx = null; d.fy = null; })
+  );
 
-// 光晕
-node.append("circle")
-  .attr("r", 22).attr("fill", "none")
-  .attr("stroke", d => typeColor[d.type]).attr("stroke-width", 1.5)
-  .attr("stroke-opacity", 0.3).attr("stroke-dasharray", "3,3")
-  .attr("class", "ring");
+// Outer glow ring
+node.append('circle')
+  .attr('r', 22).attr('fill', 'none')
+  .attr('stroke', d => typeColor[d.type]).attr('stroke-width', 1.5)
+  .attr('stroke-opacity', 0.25).attr('stroke-dasharray', '3,3')
+  .attr('class', 'ring');
 
-// 主体圆
-node.append("circle")
-  .attr("r", 18).attr("fill", d => typeColor[d.type])
-  .attr("fill-opacity", 0.15)
-  .attr("stroke", d => typeColor[d.type]).attr("stroke-width", 2)
-  .style("filter", d => `drop-shadow(0 0 8px ${typeColor[d.type]}80)`);
+// Main circle
+node.append('circle')
+  .attr('r', 17).attr('fill', d => typeColor[d.type])
+  .attr('fill-opacity', 0.12)
+  .attr('stroke', d => typeColor[d.type]).attr('stroke-width', 2)
+  .style('filter', d => `drop-shadow(0 0 7px ${typeColor[d.type]}70)`);
 
-// 标签
-node.append("text").attr("class", "node-label").each(d => {
-  const lines = d.label.split("\n");
+// Label lines
+node.each(function(d) {
+  const lines = d.label.split('\n');
+  const el = d3.select(this);
   lines.forEach((l, i) => {
-    d3.select(this.parentNode).append("text")
-      .attr("class", "node-label")
-      .attr("y", -4 + i * 13)
-      .attr("font-size", d.type === "core" ? "12px" : "10px")
-      .attr("font-weight", d.type === "core" ? "bold" : "normal")
-      .attr("fill", d.type === "core" ? "#e0f0ff" : "#b0c0d8")
+    el.append('text')
+      .attr('class', 'node-label')
+      .attr('y', -5 + i * 13)
+      .attr('font-size', d.type === 'core' ? '11px' : '9.5px')
+      .attr('font-weight', d.type === 'core' ? 'bold' : 'normal')
+      .attr('fill', d.type === 'core' ? '#d0e8ff' : '#a0b0c8')
       .text(l);
   });
 });
 
-// 悬停
-const tooltip = document.getElementById("tooltip");
-node.on("mouseover", (e, d) => {
-  tooltip.style.display = "block";
-  tooltip.style.left = (e.clientX + 14) + "px";
-  tooltip.style.top = (e.clientY - 20) + "px";
+// ── Tooltip ──
+const tooltip = document.getElementById('tooltip');
+node.on('mouseover', (e, d) => {
+  tooltip.style.display = 'block';
   tooltip.innerHTML = d.detail;
-}).on("mousemove", (e) => {
-  tooltip.style.left = (e.clientX + 14) + "px";
-  tooltip.style.top = (e.clientY - 20) + "px";
-}).on("mouseout", () => { tooltip.style.display = "none"; });
+  positionTooltip(e);
+}).on('mousemove', positionTooltip)
+  .on('mouseout', () => { tooltip.style.display = 'none'; });
 
-simulation.on("tick", () => {
+function positionTooltip(e) {
+  const x = e.clientX + 16;
+  const y = Math.min(e.clientY - 10, window.innerHeight - 200);
+  tooltip.style.left = x + 'px';
+  tooltip.style.top = y + 'px';
+}
+
+// ── Tick ──
+simulation.on('tick', () => {
   link
-    .attr("x1", d => d.source.x).attr("y1", d => d.source.y)
-    .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
-  node.attr("transform", d => `translate(${d.x},${d.y})`);
+    .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+    .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+  node.attr('transform', d => `translate(${Math.max(30,Math.min(window.innerWidth-30,d.x))},${Math.max(60,Math.min(window.innerHeight-30,d.y))})`);
 });
 
-document.getElementById("node-count").textContent = nodes.length;
-document.getElementById("edge-count").textContent = links.length;
+// ── Stats ──
+document.getElementById('node-count').textContent = simNodes.length;
+document.getElementById('edge-count').textContent = links.length;
+
+// ── Language switch ──
+function applyLang() {
+  document.getElementById('legend-title').textContent = t('legendTitle');
+  document.getElementById('hint').textContent = t('hint');
+  document.getElementById('stats').innerHTML =
+    `${t('stats')}: <span id="node-count">${simNodes.length}</span> · ${t('edges')}: <span id="edge-count">${links.length}</span>`;
+
+  // Rebuild graph with new language
+  simNodes = buildNodes();
+  node.data(simNodes).each(function(d) {
+    d3.select(this).selectAll('text').remove();
+    const lines = d.label.split('\n');
+    const el = d3.select(this);
+    lines.forEach((l, i) => {
+      el.append('text')
+        .attr('class', 'node-label')
+        .attr('y', -5 + i * 13)
+        .attr('font-size', d.type === 'core' ? '11px' : '9.5px')
+        .attr('font-weight', d.type === 'core' ? 'bold' : 'normal')
+        .attr('fill', d.type === 'core' ? '#d0e8ff' : '#a0b0c8')
+        .text(l);
+    });
+  });
+  node.on('mouseover', (e, d) => {
+    tooltip.style.display = 'block';
+    tooltip.innerHTML = d.detail;
+    positionTooltip(e);
+  });
+}
+
+document.getElementById('btn-en').onclick = function() {
+  lang = 'en';
+  document.getElementById('btn-en').classList.add('active');
+  document.getElementById('btn-zh').classList.remove('active');
+  applyLang();
+};
+document.getElementById('btn-zh').onclick = function() {
+  lang = 'zh';
+  document.getElementById('btn-zh').classList.add('active');
+  document.getElementById('btn-en').classList.remove('active');
+  applyLang();
+};
 </script>
 </body>
 </html>
