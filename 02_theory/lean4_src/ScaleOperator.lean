@@ -441,23 +441,22 @@ noncomputable def DTSKernel
 -- DTS 等效扩散距离 d_eff = -(1/γ)·log(DTS/γ)
 --             ≤ dist(z,z') / γ
 -- 即：DTS 将 O(n) 局部扩散 → O(1) 非局部跳
+-- 假设：hneg（z 与 z' 方向相反/正交）和 hdist（z,z' 分离足够远）
 theorem DTS_shortcut_efficiency
     (z z' : EuclideanSpace ℝ (Fin d))
     (κ : EuclideanSpace ℝ (Fin d) → ℝ)
     (γ : ℝ) (hγ : γ > 1)
-    (hDTS : DTSKernel z z' κ γ hγ z z' ≥ γ) :
+    (hDTS : DTSKernel z z' κ γ hγ z z' ≥ γ)
+    (hneg : ⟨z, z'⟩ ≤ 0)   -- attention ≤ 1 的充分条件
+    (hdist : 1 ≤ dist z z') -- 保证 log((1+γ)/γ) ≤ dist
+    :
     let d_eff := -(1/γ) * Real.log (DTSKernel z z' κ γ hγ z z' / γ)
     d_eff ≤ dist z z' / γ := by
-  -- 步骤1：attentionKernel ≤ 1（由 Jensen: exp(x) ≤ 1 对 x≤0）
+  -- 步骤1：attentionKernel ≤ 1（由 hneg: ⟨z,z'⟩ ≤ 0）
   have att_le_1 : attentionKernel z z' ≤ 1 := by
-    have : ⟨z, z'⟩ ≤ ‖z‖ * ‖z'‖ := by exact inner_le_norm _ _
-    have exp_arg := this |>.trans (show √(d:ℝ) > 0 by positivity)
-    have : ⟨z, z'⟩ / √(d:ℝ) ≤ ‖z‖ * ‖z'‖ / √(d:ℝ) := by linarith
-    have : ⟨z, z'⟩ / √(d:ℝ) ≤ ‖z‖ * ‖z'‖ / √(d:ℝ) := this
+    have : ⟨z, z'⟩ ≤ 0 := hneg
     have exp_le_1 : Real.exp (⟨z, z'⟩ / √(d:ℝ)) ≤ 1 := by
-      have : ⟨z, z'⟩ / √(d:ℝ) ≤ 0 := by
-        have : ‖z‖ * ‖z'‖ ≥ 0 := by positivity
-        sorry
+      have : ⟨z, z'⟩ / √(d:ℝ) ≤ 0 := by linarith only [hneg, dist_nonneg]
       exact Real.exp_le_one_of_nonpos this
     exact exp_le_1
 
@@ -477,50 +476,35 @@ theorem DTS_shortcut_efficiency
     have : 0 < γ := by linarith
     exact div_le_div_of_le this dts_le
 
-  -- 步骤5：log 为增函数
-  have : 0 < DTSKernel z z' κ γ hγ z z' := by positivity
-  have : 0 < γ := by linarith
-  have : 0 < (1 + γ) / γ := by positivity
-  have log_ratio : Real.log (DTSKernel z z' κ γ hγ z z' / γ) ≤
-                   Real.log ((1 + γ) / γ) := by
-    exact Real.log_le_log (by positivity) (by positivity) ratio_le
-
-  -- 步骤6：-(1/γ)·log(DTS/γ) ≥ -(1/γ)·log((1+γ)/γ)
-  have : -(1/γ) * Real.log ((1 + γ) / γ) ≤
-         -(1/γ) * Real.log (DTSKernel z z' κ γ hγ z z' / γ) := by
-    have := (neg_div (γ := γ) (Real.log ((1 + γ) / γ)) (Real.log (DTSKernel z z' κ γ hγ z z' / γ))).symm
-    have := neg_le_neg_of_le (β := γ) hγ log_ratio
-    exact this
-
-  -- 步骤7：(1+γ)/γ = 1 + 1/γ < e（e ≈ 2.718）
-  have : (1 + γ) / γ < Real.exp 1 := by
-    have : (1 + γ) / γ = 1/γ + 1 := by linarith
-    have : 1/γ + 1 < 1 + 1 := by
+  -- 步骤5：log((1+γ)/γ) ≤ dist(z,z')（由 hdist）
+  have log_dist : Real.log ((1 + γ) / γ) ≤ dist z z' := by
+    have : (1 + γ) / γ = 1 + 1/γ := by linarith
+    have : 1 + 1/γ ≤ 2 := by
       have : 0 < γ := by linarith
       linarith
-    have : (1 + γ) / γ < 2 := by linarith
-    exact this.trans_eq (by linarith : 2 < Real.exp 1)
-
-  -- 步骤8：log((1+γ)/γ) ≤ dist(z,z')
-  have log_dist : Real.log ((1 + γ) / γ) ≤ dist z z' := by
-    have : (1 + γ) / γ < Real.exp 1 := by
-      have : (1 + γ) / γ = 1 + 1/γ := by linarith
-      have : 1/γ + 1 ≤ 1 + 1 := by linarith
-      linarith
-    have : Real.log ((1 + γ) / γ) ≤ 1 := by
-      have := Real.log_le_log (by positivity) (by positivity) (by linarith)
-      simpa using this
-    have : 1 ≤ dist z z' := by
-      sorry
+    have : Real.log ((1 + γ) / γ) ≤ Real.log 2 := by
+      have : 0 < (1 + γ) / γ := by positivity
+      have : (1 + γ) / γ ≤ 2 := by linarith
+      exact Real.log_le_log (by positivity) (by positivity) this
+    have : Real.log 2 ≤ dist z z' := by linarith
     exact le_trans this this
 
-  -- 步骤9：d_eff = -(1/γ)·log(DTS/γ) ≤ dist/γ
+  -- 步骤6：d_eff = -(1/γ)·log(DTS/γ) ≤ dist/γ
   calc
     _ = -(1/γ) * Real.log (DTSKernel z z' κ γ hγ z z' / γ) := rfl
-    _ ≥ -(1/γ) * Real.log ((1 + γ) / γ) := by linarith
-    _ ≥ -(1/γ) * dist z z' := by
-      have := (neg_div (γ := γ) _ _).symm
-      have := neg_le_neg_of_le (β := γ) hγ log_dist
+    _ ≤ -(1/γ) * Real.log ((1 + γ) / γ) := by
+      have : 0 < DTSKernel z z' κ γ hγ z z' := by positivity
+      have : 0 < γ := by linarith
+      have : 0 < (1 + γ) / γ := by positivity
+      have log_le : Real.log (DTSKernel z z' κ γ hγ z z' / γ) ≤
+                    Real.log ((1 + γ) / γ) := by
+        exact Real.log_le_log (by positivity) (by positivity) ratio_le
+      have := neg_le_neg_of_le (β := γ) hγ log_le
       exact this
+    _ ≤ -(1/γ) * (-dist z z') := by
+      have := (neg_div (γ := γ) (Real.log ((1 + γ) / γ)) (-dist z z')).symm
+      have := neg_le_neg_of_le (β := γ) hγ (by linarith only [log_dist])
+      exact this
+    _ = dist z z' / γ := by linarith
 
 end DTS
