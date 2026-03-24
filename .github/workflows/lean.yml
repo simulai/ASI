@@ -15,13 +15,17 @@ jobs:
   lean:
     name: Lean4 Type Check
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Install Lean
+      - name: Install Lean + Mathlib
+        uses: leanprover/setup-lean@v4
+        with:
+          lean-version: 4.27.0
+          mathlib: reuse
+
+      - name: Build Lean packages
         run: |
           cd 02_theory/lean4_src
-          lake exe cache get
           lake build
