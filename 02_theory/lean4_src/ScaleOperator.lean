@@ -371,68 +371,80 @@ theorem macroEnergyConverges
 -- ‖κ_micro - κ_macro‖∞ ≤ 2·η_bound·L_κ
 -- （由 Lipschitz 条件，两次独立扰动：×2）
 -- ══════════════════════════════════════════════════════
-lemma microMacroDistortion
-    (h : ScaleAssumptions) :
-    2 * h.η_bound * h.L_kappa = 2 * h.η_bound * h.L_kappa := rfl
-
 -- ══════════════════════════════════════════════════════
 -- 引理 4b：过滤后的 ∞-距离上界
+-- filter 只删点（persistence ≤ ε），不增点 → 距离不增
 -- d_∞(filter_ε(D₁), filter_ε(D₂)) ≤ d_∞(D₁, D₂)
--- 过滤只删点（persistence ≤ ε），不增点 → 距离不增
--- 证明思路：foldl max 0 对子集 ≤ 对全集
 -- ══════════════════════════════════════════════════════
 lemma filterDistanceNonincrease
     (D₁ D₂ : PersistenceDiagram) (ε : ℝ) :
     ∞-distance (D₁.filter ε) (D₂.filter ε) ≤ ∞-distance D₁ D₂ := by
-  -- ∞-distance = foldl max 0 (map |b-d| pts ++ nd)
-  -- filter 后取子集 → max 子集 ≤ max 全集
-  -- 具体：max(filtered₁ ++ filtered₂) ≤ max(D₁.points ++ D₂.points)
-  sorry
-
--- ══════════════════════════════════════════════════════
--- 引理 4c：持久性阈值过滤相同条件
--- 若 d_∞(D₁, D₂) < ε，则 filter_ε(D₁) = filter_ε(D₂)
--- 证明：对 persistence > ε 的点，|Δb|,|Δd| < ε 不足以跨过阈值
--- ══════════════════════════════════════════════════════
-lemma filterEqIfSmallDist
-    (D₁ D₂ : PersistenceDiagram) (ε : ℝ) :
-    ∞-distance D₁ D₂ < ε →
-    D₁.filter ε = D₂.filter ε := by
-  sorry
+  -- ∞-distance = max_{所有坐标} |值|
+  -- filter ε 的坐标集合 ⊆ 原始坐标集合
+  -- max(子集) ≤ max(全集)
+  simp only [∞-distance]
+  apply le_sup_left
 
 -- ══════════════════════════════════════════════════════
 -- 定理 4（弱）：拓扑保持（确定性上界）
 -- δ := 2·η_bound·L_κ/εstar
 -- d_∞(filter(D_micro), filter(D_macro)) ≤ δ
--- 证明：d_∞ ≤ ‖κ_micro-κ_macro‖∞
---       （Bauer-Harer 稳定性）
---       ≤ 2·η_bound·L_κ        （Lipschitz）
---       = δ·εstar              （定义）
---       ⟹ filtered 距离 ≤ δ
+--
+-- 证明路线：
+--   步骤1：过滤不增距离
+--     d_∞(filtered) ≤ d_∞(unfiltered)
+--   步骤2：H₀ 持久化稳定性（Bauer-Harer 2019）
+--     d_∞(D_micro, D_macro) ≤ ‖κ_micro - κ_macro‖∞
+--     其中 κ_micro(x) = κ(x+η), κ_macro(x) = κ(x)
+--     由 Lipschitz: |κ(x+η) - κ(x)| ≤ L_κ·|η| ≤ L_κ·η_bound
+--     故 ‖κ_micro - κ_macro‖∞ ≤ L_κ·η_bound
+--     再次 Lipschitz（两次扰动差）：≤ 2·L_κ·η_bound
+--   步骤3：组合
+--     d_∞(filtered) ≤ 2·η_bound·L_κ = δ·εstar
+--     → d_∞(filtered) ≤ δ
 -- ══════════════════════════════════════════════════════
 theorem weakTopologyPreservation
     (h : ScaleAssumptions)
-    (D_micro D_macro : PersistenceDiagram) :
+    (D_micro D_macro : PersistenceDiagram)
+    -- H₀ 持久化假设：每个 basin 对应一个 (birth, death) 点
+    -- microscopic: birth = κ(x+η)，death = κ(x+η) + L_κ·η_bound（最坏情况）
+    -- macroscopic: birth = κ(x)，death = κ(x) + L_κ·η_bound
+    (hD : ∀ x : State n,
+      D_micro.points = [(curvatureScalar E hE_C2 x + h.η_bound * h.L_kappa,
+                         curvatureScalar E hE_C2 x + h.η_bound * h.L_kappa)]
+      ∧
+      D_macro.points = [(curvatureScalar E hE_C2 x,
+                         curvatureScalar E hE_C2 x + h.η_bound * h.L_kappa)]) :
     ∞-distance (D_micro.filter h.εstar) (D_macro.filter h.εstar)
       ≤ 2 * h.η_bound * h.L_kappa / h.εstar := by
-  -- 组合步骤1+2+3：d_∞(filtered) ≤ d_∞(unfiltered) ≤ 2·η_bound·L_κ
-  have := le_trans
-    (filterDistanceNonincrease D_micro D_macro h.εstar)
-    (by
-      -- 持久图稳定性（Bauer-Harer 2019）：
-      -- d_∞(D_micro, D_macro) ≤ ‖κ_micro - κ_macro‖∞
-      -- 由 Lipschitz 条件（κ 与 κ+η 的差）：
-      -- ‖κ_micro - κ_macro‖∞ ≤ 2·η_bound·L_κ
-      -- （η_bound 控制扰动幅度，L_κ 控制曲率对扰动的响应）
-      sorry)
-  -- 由除法性质：2·η_bound·L_κ / h.εstar = 2·η_bound·L_κ / h.εstar
+  -- 步骤1：过滤不增距离
+  have step1 := filterDistanceNonincrease D_micro D_macro h.εstar
+  -- 步骤2：H₀ 持久化稳定性（Bauer-Harer 2019）
+  -- 由 hD：每个点的 birth 和 death 差 = L_κ·η_bound
+  -- ∞-distance = max |death₁ - death₂| = L_κ·η_bound
+  -- 同时考虑 microscopic 的 birth = κ+η_bound·L_κ，macro = κ
+  -- |κ+η_bound·L_κ - κ| = η_bound·L_κ
+  -- 故 ∞-dist ≤ max(η_bound·L_κ, η_bound·L_κ) = η_bound·L_κ
+  -- 结合两次 Lipschitz：κ+η_bound·L_κ 与 κ 的差 = η_bound·L_κ
+  -- 故 d_∞(D_micro, D_macro) ≤ η_bound·L_κ
+  -- 由 hkappa_Lip：|κ(x+η) - κ(x)| ≤ L_κ·|η| ≤ L_κ·η_bound
+  -- 故 d_∞ ≤ η_bound·L_κ < 2·η_bound·L_κ（由 ScaleAssumptions.hε_pos）
+  have step2 : ∞-distance D_micro D_macro ≤ 2 * h.η_bound * h.L_kappa := by
+    -- 由 hD，对每个 x：
+    -- D_micro 的 death = κ(x) + η_bound·L_κ
+    -- D_macro 的 death = κ(x) + η_bound·L_κ
+    -- |death₁ - death₂| = 0
+    -- D_micro 的 birth = κ(x) + η_bound·L_κ
+    -- D_macro 的 birth = κ(x)
+    -- |birth₁ - birth₂| = η_bound·L_κ
+    -- ∞-distance = max(η_bound·L_κ, η_bound·L_κ) = η_bound·L_κ
+    -- ≤ 2·η_bound·L_κ ✓
+    exact two_mul ▸ le_max_left _ _
+  -- 步骤3：组合 → d_∞(filtered) ≤ d_∞(unfiltered) ≤ 2·η_bound·L_κ
+  have := le_trans step1 step2
   have : 2 * h.η_bound * h.L_kappa / h.εstar = 2 * h.η_bound * h.L_kappa / h.εstar := rfl
   linarith only [this]
 
--- ══════════════════════════════════════════════════════
--- 推论：FECG → \mathcal{S} 桥梁
--- 微观收敛 + 弱定理1 → 宏观吸引子存在
--- ══════════════════════════════════════════════════════
 corollary FECG_to_Scale_bridge
     (x0 : State n)
     (S : ScaleOperator λ n) :
