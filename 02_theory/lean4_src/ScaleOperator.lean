@@ -2,6 +2,7 @@
 -- ScaleOperator.lean
 -- \mathcal{S} 尺度算子：微观-宏观桥梁的形式化
 -- 目标：严格证明 \mathcal{S} 保持拓扑不变量 + 自由能不增
+-- CI: GitHub Actions (leanprover/setup-lean v4 + mathlib reuse)
 -- =============================================================================
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Analysis.Calculus.FDeriv.Basic
