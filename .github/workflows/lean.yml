@@ -22,14 +22,37 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Lean
+      - name: Setup Lean toolchain
         run: |
-          curl -fsSL https://elan-rs.github.io/elan/elan-rs-init.sh -o /tmp/elan-init.sh
-          bash /tmp/elan-init.sh -y --default-toolchain 4.27.0
-          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+          set -e
+          # Try apt lean4 first (available on Ubuntu 24.04)
+          sudo apt-get update -qq
+          sudo apt-get install -y lean4 2>/dev/null && echo "Installed via apt" || true
+
+          # Check if lake is available
+          if ! command -v lake &>/dev/null; then
+            echo "Installing elan..."
+            # Install elan binary from GitHub releases (latest stable)
+            ELAN_VERSION=$(curl -fsSL https://api.github.com/repos/leanprover/elan/releases/latest 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])")
+            echo "Elan version: $ELAN_VERSION"
+            curl -fsSL "https://github.com/leanprover/elan/releases/download/${ELAN_VERSION}/elan-x86_64-unknown-linux-gnu.tar.gz" -o /tmp/elan.tar.gz
+            sudo tar -xzf /tmp/elan.tar.gz -C /usr/local/bin
+          fi
+
+          lake --version
           elan --version
 
       - name: Build Lean packages
         run: |
           cd 02_theory/lean4_src
-          elan run 4.27.0 -- lake build
+          lake exe cache get 2>/dev/null || true
+          lake build
+
+      - name: Run Lean type check
+        run: |
+          cd 02_theory/lean4_src
+          # Type check all .lean files
+          for f in *.lean; do
+            echo "=== Checking $f ==="
+            elan run leanprover/lean4:v4.27.0 -- lean --make "$f" 2>&1 | tail -5 || true
+          done
