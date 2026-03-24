@@ -10,3 +10,5 @@ lean_lib FECG_LEAN
 lean_lib MultiModal
 
 lean_lib Composite
+
+lean_lib ScaleOperator
