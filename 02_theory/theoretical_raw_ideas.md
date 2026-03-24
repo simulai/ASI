@@ -79,17 +79,18 @@
 
 ---
 
-### Idea-005: 代码叠加态 — "专利翻译"作为 AGI 代码生成目标（2026-03-24）
+### Idea-005: 论文转译形式化验证（2026-03-24）
 
 **来源**: 与 AI 关于 FEP + 代码生成的讨论
 
-**核心洞察**: 把代码生成目标从"生成正确代码"改为"翻译推理路径"
+**核心洞察**: 把目标从"生成正确代码"改为"转译推理路径"
 
-> 大模型走过的路，我们重新走一遍。
+> 把论文转成 Lean4 证明，积累下来的就是真理，漂浮的就是幻觉。
 
-- 专利 = (问题陈述) → (推理路径) → (最终公式/代码)
-- 翻译 = 把自然语言推理路径转成 Lean4 证明 → 强制模型把完整推理"说出来"
-- 优势：过程本身是 ground truth，结果难验证，过程好记录
+- 论文 = (问题陈述) → (推理路径) → (结论)
+- 翻译 = 把自然语言推理路径转成 Lean4 证明 → 强制把完整推理"说出来"
+- 优势：过程本身是 ground truth，结果难验证，过程好记录，过程对了结果大概率对
+- 与"专利翻译"的区别：论文自带推理路径记录，更适合做形式化翻译的目标
 
 **热力学解释**：
 $$F(\text{推理路径}) = -\log p(\text{结论}|\text{路径}) + D_{\text{KL}}(q_\theta(\text{路径}|\text{问题}) \| p(\text{最优路径}))$$
@@ -111,6 +112,82 @@ $$F(\text{推理路径}) = -\log p(\text{结论}|\text{路径}) + D_{\text{KL}}(
 **状态**: 想法（未验证）
 
 **决策**: 长期目标（5-10年），近期可做消融验证 — 建议标记为 ASI 时代工具
+
+---
+
+### Idea-006: Epiplexity 过滤 → 持续学习的热力学解法（2026-03-25）
+
+**来源**: Finzi et al. (2025) "From Entropy to Epiplexity: Rethinking Information for Computationally Bounded Intelligence" — arXiv:2601.03220 (CMU/NYU)
+
+同时参考: Finzi, Qiu, Jiang, Izmailov, Kolter, Wilson 的原论文视频: https://www.youtube.com/watch?v=2XBqlpi4fNk
+
+**原论文三个定理**（Epiplexity理论的核心贡献）:
+1. CSPRNG 有极大的时限熵但极小的 epiplexity（Theorem 9）
+2. 在密码学假设下，存在具有大 epiplexity 的随机变量（Theorem 10）
+3. 确定性变换可以增加时限熵和 epiplexity（Theorem 12）— 解决"信息守恒悖论"
+
+**实测方法**:
+- Prequential coding: 训练损失曲线下面积（相对于最终损失）
+- Requential coding: 师生模型 KL 散度的累积和
+
+**与 Idea-006 的连接**：用梯度一致性作为 epiplexity proxy，$H_T$ proxy = 梯度方差
+
+**原论文实验发现**:
+- epiplexity 与 OOD 泛化强相关（象棋任务）
+- 高 epiplexity 数据是 OOD 表现的关键预测因子
+
+**实验验证（Round 1, 2026-03-25）**:
+- 脚本: `workspace/experiments/idea_006_round1b.py`
+- **原始假设（错）**: 跳过 $H_T$ 样本的更新 → 降低总 Landauer 耗散
+- **实验结果**: 跳过更新反而使总耗散增加（+1.2% ~ +12.7%），因为剩余更新的 |Δθ| 增大
+- **数学原因**: total_diss ≈ |Δθ| × N_updates，跳过 N_updates 会导致 |Δθ| 补偿性增大
+- **唯一有意义的发现**: 曲率 gate（D_curv）在 goal 距离上赢了（0.0858 vs 0.0873），说明在曲率高的决策边界区域更新对学习最有价值
+- **修正假设**: 跳过更新不能减少耗散，但**积累缓冲方案**（skip → 积累 → 一次小更新）可以
+
+**修正后的假设**:
+1. 跳过更新本身不能降低 Landauer 耗散（等价的物理约束）
+2. 积累缓冲（accumulation buffer）是降低耗散的正确方法
+3. 曲率 gate 的价值是**质量优先**而非**数量减少**
+
+**待验证（Round 2）**:
+- 积累缓冲方案：在 `workspace/experiments/idea_006_round2_accumulation.py` 中实现
+- 验证：积累后一次小更新 vs 多次分散更新，耗散是否显著降低
+
+- 这直接支持我们的假设：CLFA 的持续学习改进需要过滤高 $H_T$ 样本
+
+**CLFA 代码实现位置**: `src/clfa/core.py` `_step()` 第196-203行
+
+**状态**: 想法（未验证）
+
+**核心洞察**: 用 $S_T(X)$ vs $H_T(X)$ 过滤数据流——只对结构信息做参数更新，忽略噪声
+
+> "If we use Epiplexity to filter the data stream so the model only updates on structural information and ignores the entropy/noise, we could get stable, continuous improvement."
+
+**与现有框架的连接**：
+- M4（熵承接系统）→ 目标：continuous learning 不退化
+- 此方法 → 具体实现路径：$S_T$ 过滤
+- Landauer 原理 → 每个 $H_T$ 噪声更新 = 纯浪费的耗散 = 热力学无效功
+
+**数学表述**：
+$$\Delta \Theta_{S_T} = \eta \cdot \mathbb{1}_{S_T}(\text{样本}) \cdot \nabla_\theta \mathcal{L}$$
+$$\Delta \Theta_{H_T} = 0 \quad \text{（拒绝更新）}$$
+
+即：Landauer 有效功只施加在 $S_T$ 样本上，$H_T$ 样本产生的梯度被屏蔽。
+
+**热力学解释**：
+- 过滤熵/噪声 $H_T$ → 阻断无序热量输入，防止"语义热逃逸"（幻觉）
+- 提取结构信息 $S_T$ → 只允许有效功作用于参数流形
+- 每一焦耳计算能量都转化为预测能力提升 → 热力学效率极致化
+
+**实验设计**：
+1. 在连续学习 benchmark（CIFAR-100 incremental）上，监控每个 batch 的 dissipation rate
+2. 对比：全量更新（baseline）vs $S_T$ 过滤更新
+3. 验证：过滤后 forgetting rate 是否降低，且 dissipation 是否同步下降
+4. 关键指标：$S_T$ 样本比例（高 forgetting 阶段是否对应高 $H_T$ 比例）
+
+**状态**: 想法（未验证）
+
+**决策**: 中期目标 — 可在现有 CLFA 框架上做消融实验；需要解决 $S_T$ 实时估计问题
 
 ---
 
