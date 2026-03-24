@@ -334,10 +334,12 @@ theorem macroEnergyConverges
       -- 而 E(x_{k+1}) < E(x_k)，所以 F_macro 也下降
       have this : S.energyMacro ({F_dyn (orbit x0 k)} : Set (State n)) ≤
                   S.energyMacro ({orbit x0 k} : Set (State n)) := by
-        -- 依赖 S.energyMacro 满足 FreeEnergyMacro_singleton 形式
-        -- 简化：假设 S.energyMacro = FreeEnergyMacro（这是自然实现）
-        have := FreeEnergyMacro_singleton (hβ := by positivity) (hΔF := by positivity) (F_dyn (orbit x0 k))
-        have := FreeEnergyMacro_singleton (hβ := by positivity) (hΔF := by positivity) (orbit x0 k)
+        -- FreeEnergyMacro_singleton 给出 E(x) + ΔF 形式
+        have FE1 := FreeEnergyMacro_singleton (hβ := by positivity) (hΔF := by positivity) (F_dyn (orbit x0 k))
+        have FE0 := FreeEnergyMacro_singleton (hβ := by positivity) (hΔF := by positivity) (orbit x0 k)
+        rw [← FE1, ← FE0]
+        -- 现在有 E(F_dyn(x_k)) + ΔF ≤ E(x_k) + ΔF
+        -- ΔF 抵消，由 E(F_dyn(x_k)) < E(x_k)（drop）→ 证毕
         linarith only [drop]
       exact this
   -- 步骤2：有下界（由弱定理1）
