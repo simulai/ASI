@@ -57,9 +57,9 @@
 - 这部分信息不能被自由能项吸收，因此产生额外修正项
 - `ΔF_topo = α · β₀ · ⟨|κ|⟩` 其中 `α` 是粗粒化尺度，`β₀` 是第零同调群维度
 
-**状态**: 已在 Lean4 中部分形式化，3 个 sorry 未填
+**状态**: ✅ 完成（2026-03-24 零 sorry — weakTopologyPreservation 证明完成）
 
-**决策**: 继续推进 — 填完 sorry，完成 ΔF_topo 定理
+**决策**: ✅ 完成 — weakTopologyPreservation 给出确定性上界 d_∞ ≤ 2·η_bound·L_κ/εstar
 
 ---
 
