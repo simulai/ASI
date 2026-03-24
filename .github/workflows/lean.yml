@@ -25,22 +25,21 @@ jobs:
       - name: Setup Lean toolchain
         run: |
           set -e
-          # Try apt lean4 first (available on Ubuntu 24.04)
-          sudo apt-get update -qq
-          sudo apt-get install -y lean4 2>/dev/null && echo "Installed via apt" || true
-
-          # Check if lake is available
-          if ! command -v lake &>/dev/null; then
-            echo "Installing elan..."
-            # Install elan binary from GitHub releases (latest stable)
-            ELAN_VERSION=$(curl -fsSL https://api.github.com/repos/leanprover/elan/releases/latest 2>/dev/null | python3 -c "import sys,json; print(json.load(sys.stdin)['tag_name'])")
-            echo "Elan version: $ELAN_VERSION"
-            curl -fsSL "https://github.com/leanprover/elan/releases/download/${ELAN_VERSION}/elan-x86_64-unknown-linux-gnu.tar.gz" -o /tmp/elan.tar.gz
-            sudo tar -xzf /tmp/elan.tar.gz -C /usr/local/bin
+          # Install elan (Lean toolchain manager) if not present
+          if ! command -v elan &>/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y elan 2>/dev/null || true
           fi
 
+          # Install Lean 4.27.0 toolchain via elan
+          elan show leanprover/lean4:v4.27.0 2>/dev/null || \
+            elan toolchain install leanprover/lean4:v4.27.0
+
+          # Add elan bin to PATH
+          export PATH="$HOME/.elan/bin:$PATH"
+
+          elan default leanprover/lean4:v4.27.0
           lake --version
-          elan --version
 
       - name: Build Lean packages
         run: |
