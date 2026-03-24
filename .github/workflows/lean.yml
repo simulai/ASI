@@ -10,6 +10,7 @@ on:
     paths:
       - '02_theory/lean4_src/**/*.lean'
       - '02_theory/lean4_src/lakefile.lean'
+  workflow_dispatch: {}
 
 jobs:
   lean:
