@@ -1,8 +1,9 @@
 """
-H39 Living Tree - Retrieval + CodeGen (Kaggle Version)
-======================================================
+H39 Living Tree - Retrieval + CodeGen-2B (Kaggle Version)
+===========================================================
 
 Kaggle-optimized: 30-minute timeout, GPU-accelerated.
+Uses codegen-2B-multi for generation (smaller, faster).
 
 Author: Claude Code
 Date: 2026-04-15
@@ -109,9 +110,9 @@ def main():
         return np.array(embs)
 
     # CodeGen for generation
-    print("Loading CodeGen-350M...")
-    cg_tok = AutoTokenizer.from_pretrained("Salesforce/codegen-350M-multi")
-    cg_model = AutoModelForCausalLM.from_pretrained("Salesforce/codegen-350M-multi").to(device)
+    print("Loading CodeGen-2B...")
+    cg_tok = AutoTokenizer.from_pretrained("Salesforce/codegen-2B-multi")
+    cg_model = AutoModelForCausalLM.from_pretrained("Salesforce/codegen-2B-multi").to(device)
     cg_model.eval()
 
     # Load tasks
