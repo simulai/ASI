@@ -42,6 +42,7 @@ def code_eval(gen, gt):
 
 # CodeGen generation
 def generate(prompt, examples, model, tokenizer, device):
+    import torch
     fs = "Below are some code examples:\n\n"
     for p, s in examples:
         fs += f"Task:\n{p}\nSolution:\n{s}\n\n"
