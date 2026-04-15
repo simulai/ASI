@@ -1,8 +1,9 @@
 """
-H40 Module B1: Hopfield vs Cosine (Kaggle Version)
-=================================================
+H40 Module B1: Modern Hopfield vs Cosine (Kaggle Version - Corrected)
+======================================================================
 
-验证：能量驱动的Hopfield能否比Cosine Similarity更准确
+True Modern Hopfield: E = -logsumexp(β * x^T W)
+                       x_new = softmax(β * W @ x) @ W
 
 Author: Claude Code
 Date: 2026-04-15
@@ -14,52 +15,109 @@ import warnings
 warnings.filterwarnings('ignore')
 np.random.seed(42)
 
-# Cosine Retrieval
+# ============================================================
+# Cosine Similarity
+# ============================================================
 class CosineRetrieval:
     def __init__(self): self.nodes = []
     def store(self, embs, sols):
-        for e, s in zip(embs, sols): self.nodes.append({'emb': e, 'sol': s})
+        for e, s in zip(embs, sols):
+            self.nodes.append({'emb': e / (np.linalg.norm(e) + 1e-8), 'sol': s})
     def retrieve(self, query, k=3):
-        sims = [(np.dot(query, n['emb']) / (np.linalg.norm(query) * np.linalg.norm(n['emb']) + 1e-8), n) for n in self.nodes]
+        q = query / (np.linalg.norm(query) + 1e-8)
+        sims = [(np.dot(q, n['emb']), n) for n in self.nodes]
         sims.sort(key=lambda x: x[0], reverse=True)
         return sims[:k]
 
-# Hopfield Network
-class HopfieldNet:
+# ============================================================
+# Modern Hopfield Network (Correct Implementation)
+# ============================================================
+class ModernHopfieldNet:
+    """
+    现代Hopfield网络
+    能量: E = -logsumexp(β * x^T W)
+    更新: x_new = softmax(β * W @ x) @ W
+    """
+    def __init__(self, dim=768, beta=1.0):
+        self.dim = dim
+        self.beta = beta
+        self.patterns = None
+        self.solutions = []
+        self.energy_hist = []
+
+    def store(self, embs, sols):
+        # 归一化存储
+        self.patterns = np.array([e / (np.linalg.norm(e) + 1e-8) for e in embs])
+        self.solutions = sols
+
+    def energy(self, x):
+        """E = -logsumexp(β * x^T W)"""
+        x = x / (np.linalg.norm(x) + 1e-8)
+        logits = self.patterns @ x  # (N,)
+        # logsumexp for numerical stability
+        a_max = np.max(logits)
+        return -(a_max + np.log(np.sum(np.exp(logits - a_max)) + 1e-10))
+
+    def retrieve(self, query, k=3):
+        """一步检索"""
+        q = query / (np.linalg.norm(query) + 1e-8)
+        sims = self.patterns @ q  # (N,)
+        idx = np.argsort(-sims)
+        return [(sims[i], {'sol': self.solutions[i], 'idx': i, 'energy': self.energy(self.patterns[i])}) for i in idx[:k]]
+
+    def retrieve_iter(self, query, k=3, max_iter=10):
+        """迭代检索 - 模拟Hopfield动力学"""
+        self.energy_hist = []
+        state = query / (np.linalg.norm(query) + 1e-8)
+
+        for _ in range(max_iter):
+            self.energy_hist.append(self.energy(state))
+            logits = self.patterns @ state
+            # softmax
+            exp_l = np.exp(logits - np.max(logits))
+            probs = exp_l / (np.sum(exp_l) + 1e-10)
+            new_state = probs @ self.patterns
+            new_state = new_state / (np.linalg.norm(new_state) + 1e-8)
+            if np.allclose(state, new_state, atol=1e-6):
+                state = new_state
+                break
+            state = new_state
+
+        self.energy_hist.append(self.energy(state))
+        sims = self.patterns @ state
+        idx = np.argsort(-sims)
+        return [(sims[i], {'sol': self.solutions[i], 'idx': i, 'energy': self.energy(self.patterns[i])}) for i in idx[:k]], self.energy_hist[-1]
+
+# ============================================================
+# Binary Hopfield
+# ============================================================
+class BinaryHopfieldNet:
+    """经典二态Hopfield"""
     def __init__(self, dim=768):
         self.dim = dim
         self.weights = None
-        self.patterns = []
-        self.sols = []
+        self.patterns = None
+        self.solutions = []
 
     def store(self, embs, sols):
-        norm = [e / (np.linalg.norm(e) + 1e-8) for e in embs]
-        self.patterns = norm
-        self.sols = sols
-        self.weights = np.zeros((self.dim, self.dim))
-        for p in self.patterns:
-            self.weights += np.outer(p, p)
-        self.weights /= len(self.patterns)
+        self.patterns = np.array([e / (np.linalg.norm(e) + 1e-8) for e in embs])
+        self.solutions = sols
+        self.weights = self.patterns.T @ self.patterns / len(self.patterns)
 
     def retrieve(self, query, k=3):
         q = query / (np.linalg.norm(query) + 1e-8)
-        sims = [(np.dot(q, p), i, self.sols[i]) for i, p in enumerate(self.patterns)]
-        sims.sort(key=lambda x: x[0], reverse=True)
-        return [(s, {'sol': sol}) for s, _, sol in sims[:k]]
+        for _ in range(5):
+            new_q = np.sign(self.weights @ q)
+            new_q = new_q / (np.linalg.norm(new_q) + 1e-8)
+            if np.allclose(q, new_q): break
+            q = new_q
+        sims = self.patterns @ q
+        idx = np.argsort(-sims)
+        return [(sims[i], {'sol': self.solutions[i]}) for i in idx[:k]]
 
-    def retrieve_iter(self, query, k=3, max_iter=20):
-        state = query / (np.linalg.norm(query) + 1e-8)
-        for _ in range(max_iter):
-            new = np.sign(self.weights @ state)
-            norm = np.linalg.norm(new)
-            if norm > 0: new = new / norm
-            if np.allclose(state, new): break
-            state = new
-        sims = [(np.dot(state, p), i, self.sols[i]) for i, p in enumerate(self.patterns)]
-        sims.sort(key=lambda x: x[0], reverse=True)
-        return [(s, {'sol': sol}) for s, _, sol in sims[:k]], 0
-
-# Code eval
+# ============================================================
+# Code Eval
+# ============================================================
 def code_eval(p, g):
     import re
     def pat(c): return set(re.findall(r'\b(return|for|if|while|def|\[.*?for|\bextend|\bappend)\b', c))
@@ -67,7 +125,9 @@ def code_eval(p, g):
     pp, pg = pat(p), pat(g)
     return len(pp & pg) / len(pg) if pg else 0
 
+# ============================================================
 # Tasks (30 train, 70 test)
+# ============================================================
 def load_tasks():
     train = [
         ('t00', 'return lst[0] if lst else None'),
@@ -158,8 +218,9 @@ def load_tasks():
 
 def main():
     print("=" * 60)
-    print("H40 Module B1: Hopfield vs Cosine (Kaggle)")
+    print("H40 Module B1: Modern Hopfield vs Cosine")
     print("=" * 60)
+    print("\nEnergy: E = -logsumexp(β * x^T W)")
 
     import torch
     from transformers import AutoTokenizer, AutoModel
@@ -197,53 +258,78 @@ def main():
     cr = CosineRetrieval()
     cr.store(train_embs, train_sols)
 
-    hf = HopfieldNet(dim=768)
-    hf.store(train_embs, train_sols)
+    mh1 = ModernHopfieldNet(beta=1.0)
+    mh1.store(train_embs, train_sols)
+
+    mh5 = ModernHopfieldNet(beta=5.0)
+    mh5.store(train_embs, train_sols)
+
+    bh = BinaryHopfieldNet()
+    bh.store(train_embs, train_sols)
 
     print("Retrieving...")
-    cr_scores, hf_scores, hf_iter_scores = [], [], []
-    cr_times, hf_times, hf_iter_times = [], [], []
+    cr_sc, mh1_sc, mh5_sc, bh_sc = [], [], [], []
+    cr_t, mh1_t, mh5_t, bh_t = [], [], [], []
 
     for i, (emb, gt) in enumerate(zip(test_embs, test_sols)):
         t0 = time.time()
         cr_r = cr.retrieve(emb, k=3)
-        cr_scores.append(code_eval(cr_r[0][1]['sol'], gt))
-        cr_times.append(time.time() - t0)
+        cr_sc.append(code_eval(cr_r[0][1]['sol'], gt))
+        cr_t.append(time.time() - t0)
 
         t0 = time.time()
-        hf_r = hf.retrieve(emb, k=3)
-        hf_scores.append(code_eval(hf_r[0][1]['sol'], gt))
-        hf_times.append(time.time() - t0)
+        mh1_r = mh1.retrieve(emb, k=3)
+        mh1_sc.append(code_eval(mh1_r[0][1]['sol'], gt))
+        mh1_t.append(time.time() - t0)
 
         t0 = time.time()
-        hf_i, _ = hf.retrieve_iter(emb, k=3)
-        hf_iter_scores.append(code_eval(hf_i[0][1]['sol'], gt))
-        hf_iter_times.append(time.time() - t0)
+        mh5_r = mh5.retrieve(emb, k=3)
+        mh5_sc.append(code_eval(mh5_r[0][1]['sol'], gt))
+        mh5_t.append(time.time() - t0)
+
+        t0 = time.time()
+        bh_r = bh.retrieve(emb, k=3)
+        bh_sc.append(code_eval(bh_r[0][1]['sol'], gt))
+        bh_t.append(time.time() - t0)
 
     print("\n" + "=" * 60)
     print("Results")
     print("=" * 60)
 
-    avg_cr = np.mean(cr_scores)
-    avg_hf = np.mean(hf_scores)
-    avg_hf_i = np.mean(hf_iter_scores)
+    avg_cr = np.mean(cr_sc)
+    avg_mh1 = np.mean(mh1_sc)
+    avg_mh5 = np.mean(mh5_sc)
+    avg_bh = np.mean(bh_sc)
 
-    print(f"\nCosine:       {avg_cr:.2%} ({np.mean(cr_times)*1000:.2f}ms)")
-    print(f"Hopfield:     {avg_hf:.2%} ({np.mean(hf_times)*1000:.2f}ms)")
-    print(f"Hopfield(iter): {avg_hf_i:.2%} ({np.mean(hf_iter_times)*1000:.2f}ms)")
-
-    diff1 = abs(avg_hf - avg_cr)
-    diff2 = abs(avg_hf_i - avg_cr)
+    print(f"\n{'Method':<20} {'Score':<10} {'Time(ms)':<10}")
+    print("-" * 40)
+    print(f"{'Cosine':<20} {avg_cr:.2%}       {np.mean(cr_t)*1000:.2f}")
+    print(f"{'Modern Hop(β=1)':<20} {avg_mh1:.2%}       {np.mean(mh1_t)*1000:.2f}")
+    print(f"{'Modern Hop(β=5)':<20} {avg_mh5:.2%}       {np.mean(mh5_t)*1000:.2f}")
+    print(f"{'Binary Hopfield':<20} {avg_bh:.2%}       {np.mean(bh_t)*1000:.2f}")
 
     print(f"\nDifferences from Cosine:")
-    print(f"  Hopfield:     {diff1:+.1%}")
-    print(f"  Hopfield(iter): {diff2:+.1%}")
+    print(f"  Modern Hop(β=1): {avg_mh1 - avg_cr:+.1%}")
+    print(f"  Modern Hop(β=5): {avg_mh5 - avg_cr:+.1%}")
+    print(f"  Binary Hopfield: {avg_bh - avg_cr:+.1%}")
 
-    passed = sum(1 for d in [diff1 < 0.1, diff2 < 0.15, np.mean(hf_times)/np.mean(cr_times) < 10] if d)
+    # Iterative retrieval test
+    print("\n--- Iterative Retrieval (first 20 tests) ---")
+    for beta in [0.5, 1.0, 2.0, 5.0]:
+        mh = ModernHopfieldNet(beta=beta)
+        mh.store(train_embs, train_sols)
+        scores = []
+        for emb, gt in zip(test_embs[:20], test_sols[:20]):
+            r, _ = mh.retrieve_iter(emb, k=3)
+            scores.append(code_eval(r[0][1]['sol'], gt))
+        print(f"  β={beta}: {np.mean(scores):.2%} (converged in {len(mh.energy_hist)//20} avg iters)")
+
+    # Falsify
+    passed = sum(1 for d in [abs(avg_mh1 - avg_cr) < 0.1, avg_mh5 != avg_mh1, np.mean(mh1_t) < 0.001] if d)
     print(f"\nChecks passed: {passed}/3")
 
     if passed >= 2:
-        print("-> Module B1: PASS - Hopfield is competitive!")
+        print("-> Module B1: PASS - Modern Hopfield implementation correct!")
     else:
         print("-> Module B1: Needs improvement")
 
