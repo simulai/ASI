@@ -28,7 +28,12 @@ ASI/
 │   ├── lean4_src/           ← FECG_LEAN Lean4 proofs
 │   ├── references.md         ← Bibliography
 │   └── zh/ | en/
-├── 03_experiments/           ← FARS toy experiments
+├── 03_experiments/           ← Living Tree experiments (H26-H38)
+│   ├── h35_humaneval_full.py        # HumanEval validation
+│   ├── h36_retrieval_generation.py # Retrieval + generation
+│   ├── h37_retrieval_llm_generation.py # LLM generation framework
+│   ├── h38_scale_validation.py      # 100-task scale test
+│   └── ASI_LivingTree_Experiments_Summary.md
 ├── 04_papers/               ← Paper drafts
 └── 05_submissions/          ← Submission tracker
 ```
